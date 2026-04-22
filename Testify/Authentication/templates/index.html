@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testify – Select Role</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('auth.static', filename='css/index.css') }}">
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="page-wrapper">
+
+<div class="card">
+
+<div class="card-welcome">Welcome to</div>
+<div class="card-title">Testify</div>
+
+<div class="card-subtitle">Please select your role to continue</div>
+
+<div class="gif-box">
+<img src="{{ url_for('auth.static', filename='img/default.png') }}" id="gif-default" class="active">
+<img src="{{ url_for('auth.static', filename='img/student.gif') }}" id="gif-student">
+<img src="{{ url_for('auth.static', filename='img/teacher.gif') }}" id="gif-teacher">
+<img src="{{ url_for('auth.static', filename='img/admin.gif') }}" id="gif-admin">
+</div>
+
+<div class="role-buttons">
+
+<button class="btn-role btn-student" data-gif="student" onclick="goToLogin('STUDENT')">
+Student Login
+</button>
+
+<button class="btn-role btn-teacher" data-gif="teacher" onclick="goToLogin('TEACHER')">
+Teacher Login
+</button>
+
+<button class="btn-role btn-admin" data-gif="admin" onclick="goToLogin('ADMIN')">
+Admin Login
+</button>
+
+</div>
+
+</div>
+
+<div class="brand">
+
+<div class="logo-circle">
+<img src="{{ url_for('auth.static', filename='img/logo.png') }}">
+</div>
+
+<div class="brand-name">Testify</div>
+
+<div class="brand-sub">
+<div class="line1">A Secure and Smart Web-Based</div>
+<div class="line2">Examination Platform</div>
+</div>
+
+</div>
+
+</div>
+
+<script ></script>
+<script>
+
+function goToLogin(role){
+setTimeout(()=>{
+window.location.href = "{{ url_for('auth.login') }}?role=" + role;
+},220);
+}
+
+</script>
+
+<script src="{{ url_for('auth.static', filename='js/index.js') }}"></script>
+
+</body>
+</html>

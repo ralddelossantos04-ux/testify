@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testify – Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('auth.static', filename='css/login.css') }}">
+</head>
+
+<body>
+
+<!-- Blobs -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<!-- Back button -->
+<a href="{{ url_for('auth.select_role') }}" class="btn-back" aria-label="Go back">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2.5"
+       stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 12H5"/>
+    <path d="M12 19l-7-7 7-7"/>
+  </svg>
+</a>
+
+<!-- Switch panel -->
+<div class="switch-panel">
+  <button class="btn-switch" id="switchBtn" aria-label="Switch role" aria-expanded="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+      <path d="M3 3v5h5"/>
+    </svg>
+  </button>
+  <div class="switch-options" id="switchOptions">
+    <div class="role-btn-wrap">
+      <span class="tip">Student</span>
+      <button class="role-btn student" data-role="STUDENT">S</button>
+    </div>
+    <div class="role-btn-wrap">
+      <span class="tip">Teacher</span>
+      <button class="role-btn teacher" data-role="TEACHER">T</button>
+    </div>
+    <div class="role-btn-wrap">
+      <span class="tip">Admin</span>
+      <button class="role-btn admin" data-role="ADMIN">A</button>
+    </div>
+  </div>
+</div>
+
+<!-- Page wrapper -->
+<div class="page-wrapper">
+
+  <!-- LEFT BRAND -->
+  <div class="brand">
+    <!-- Logo flip card -->
+    <div class="logo-wrapper" title="Hover me!">
+      <div class="logo-inner">
+        <!-- FRONT: logo.jpg -->
+        <div class="logo-front">
+          <img src="{{ url_for('auth.static', filename='img/logo.png') }}" alt="Testify Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+        </div>
+        <!-- BACK: wave.gif -->
+        <div class="logo-back">
+          <div class="wave-container">
+            <img src="{{ url_for('auth.static', filename='img/wave.gif') }}" alt="Wave" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Name -->
+    <div class="brand-name">
+      <span class="test">Test</span><span class="ify">ify</span>
+    </div>
+
+    <!-- Tagline -->
+    <div class="brand-sub">
+      <div class="line1">A Secure and Smart Web-Based</div>
+      <div class="line2">Examination Platform</div>
+    </div>
+  </div>
+
+  <!-- RIGHT CARD -->
+  <div class="card">
+    <div class="card-welcome">Welcome to</div>
+    <div class="card-title">Testify</div>
+
+    <div class="role-tab" id="roleTab">STUDENT</div>
+
+    <div class="card-subtitle">Please login to your account</div>
+
+    <!-- Student Number field -->
+    <div class="field">
+      <input type="text" id="studentNum" placeholder=" " autocomplete="off">
+      <label for="studentNum" id="studentNumLabel">Student Number</label>
+      <span class="icon-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- Password field -->
+    <div class="field">
+      <input type="password" id="password" placeholder=" " autocomplete="off">
+      <label for="password">Password</label>
+      <span class="icon-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </span>
+      <button class="eye-toggle" id="eyeToggle" type="button" aria-label="Toggle password">
+        <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Login button -->
+    <button class="btn-login" id="loginBtn" type="button">LOGIN</button>
+
+    <!-- Recover row (Student only) -->
+    <div class="recover-row" id="recoverRow">
+      <span>Can't access the account?</span>
+      <button class="btn-recover">Account Recover</button>
+    </div>
+  </div>
+</div>
+</body>
+<script src="{{ url_for('auth.static', filename='js/login.js') }}"></script>
+</html>
