@@ -1,0 +1,162 @@
+{% extends "base_student.html" %}
+
+{% block title %}Upcoming Exams - Testify Examination System{% endblock %}
+
+{% block page_title %}Upcoming Exams{% endblock %}
+
+{% block breadcrumb_item %}Exams{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* EXAM CARDS */
+    .exam-container {
+        display: flex;
+        gap: 25px;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+
+    .exam-card {
+        background: var(--bg-card);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        width: 300px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .exam-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .exam-card h3 {
+        margin: 1rem 0 0.75rem;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .course-code {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        display: inline-block;
+        font-weight: 500;
+    }
+
+    .status {
+        float: right;
+        font-size: 0.75rem;
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-weight: 500;
+    }
+
+    .status.inprogress {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+    }
+
+    .status.scheduled {
+        background: rgba(107, 114, 128, 0.1);
+        color: var(--text-muted);
+    }
+
+    .exam-info {
+        margin: 0.75rem 0;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .exam-card button {
+        margin-top: 1rem;
+        width: 100%;
+        padding: 0.75rem;
+        border: none;
+        background: var(--primary);
+        color: white;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .exam-card button:hover {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    }
+
+    .subtitle {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <p class="subtitle">View and access your scheduled assessments.</p>
+    <div class="exam-container" id="examContainer"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const exams = [
+        {
+            course: "CS201",
+            title: "Programming 2 Midterm",
+            subject: "Programming 2 — Object-Oriented Programming",
+            date: "Friday, April 24, 2026",
+            time: "7:20 AM - 9:20 AM (60 min)",
+            prof: "Prof. Elena Garcia",
+            status: "In Progress",
+            button: "Resume Exam"
+        },
+        {
+            course: "CS210",
+            title: "Data Structures Midterm",
+            subject: "Data Structures and Algorithms",
+            date: "Monday, April 27, 2026",
+            time: "7:20 AM - 8:50 AM (45 min)",
+            prof: "Prof. Elena Garcia",
+            status: "In Progress",
+            button: "Resume Exam"
+        },
+        {
+            course: "CS220",
+            title: "DBMS — SQL Practical",
+            subject: "Database Management Systems",
+            date: "Friday, May 1, 2026",
+            time: "7:20 AM - 8:20 AM (40 min)",
+            prof: "Prof. Mark Tan",
+            status: "Scheduled",
+            button: "Start Exam"
+        }
+    ];
+
+    const container = document.getElementById("examContainer");
+
+    exams.forEach(exam => {
+        const card = document.createElement("div");
+        card.className = "exam-card";
+
+        card.innerHTML = `
+            <span class="course-code">${exam.course}</span>
+            <span class="status ${exam.status === "In Progress" ? "inprogress" : "scheduled"}">${exam.status}</span>
+            <h3>${exam.title}</h3>
+            <p class="exam-info">${exam.subject}</p>
+            <p class="exam-info">📅 ${exam.date}</p>
+            <p class="exam-info">⏰ ${exam.time}</p>
+            <p class="exam-info">👤 ${exam.prof}</p>
+            <button>${exam.button}</button>
+        `;
+
+        container.appendChild(card);
+    });
+</script>
+{% endblock %}

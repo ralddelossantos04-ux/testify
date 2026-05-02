@@ -1,0 +1,127 @@
+{% extends "base_teacher.html" %}
+
+{% block title %}Profile - Testify Examination System{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block breadcrumb_item %}Profile{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+        <!-- Profile Card -->
+        <div>
+            <div class="card" style="text-align: center;">
+                <div style="width: 120px; height: 120px; background: #0d9488; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 3rem; color: white; font-weight: 700;">
+                    TR
+                </div>
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Juan Dela Cruz</h2>
+                <p style="font-size: 0.925rem; color: var(--text-muted); margin-bottom: 1.5rem;">Faculty Member</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-body); border-radius: var(--radius-md);">
+                        <i class="fas fa-envelope" style="color: var(--primary); width: 20px;"></i>
+                        <span style="font-size: 0.925rem; color: var(--text-muted);">juan.delacruz@school.edu</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-body); border-radius: var(--radius-md);">
+                        <i class="fas fa-phone" style="color: var(--primary); width: 20px;"></i>
+                        <span style="font-size: 0.925rem; color: var(--text-muted);">+63 912 345 6789</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-body); border-radius: var(--radius-md);">
+                        <i class="fas fa-building" style="color: var(--primary); width: 20px;"></i>
+                        <span style="font-size: 0.925rem; color: var(--text-muted);">Department of Mathematics</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-body); border-radius: var(--radius-md);">
+                        <i class="fas fa-id-badge" style="color: var(--primary); width: 20px;"></i>
+                        <span style="font-size: 0.925rem; color: var(--text-muted);">ID: TCH-2024-001</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Member Since</div>
+                    <div style="font-weight: 600; font-size: 0.925rem;">January 15, 2024</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Personal Information</h3>
+                
+                <form style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">First Name</label>
+                        <input type="text" value="Juan" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Last Name</label>
+                        <input type="text" value="Dela Cruz" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Email Address</label>
+                        <input type="email" value="juan.delacruz@school.edu" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Phone Number</label>
+                        <input type="tel" value="+63 912 345 6789" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Address</label>
+                        <input type="text" value="123 Education Street, Manila, Philippines" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Professional Information</h3>
+                
+                <form style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Department</label>
+                        <input type="text" value="Mathematics" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Designation</label>
+                        <input type="text" value="Senior Faculty" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Qualification</label>
+                        <input type="text" value="Masters in Mathematics" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Experience</label>
+                        <input type="text" value="10 years" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Change Password</h3>
+                
+                <form style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Current Password</label>
+                        <input type="password" placeholder="Enter current password" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">New Password</label>
+                        <input type="password" placeholder="Enter new password" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted);">Confirm New Password</label>
+                        <input type="password" placeholder="Confirm new password" style="width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                    </div>
+                </form>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                <button style="padding: 0.65rem 2rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); font-size: 0.925rem; cursor: pointer; transition: var(--transition);">
+                    Cancel
+                </button>
+                <button style="padding: 0.65rem 2rem; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-size: 0.925rem; font-weight: 500; cursor: pointer; transition: var(--transition);">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

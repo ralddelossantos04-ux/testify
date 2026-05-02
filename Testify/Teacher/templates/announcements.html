@@ -1,0 +1,155 @@
+{% extends "base_teacher.html" %}
+
+{% block title %}Announcements - Testify Examination System{% endblock %}
+{% block page_title %}Announcements{% endblock %}
+{% block breadcrumb_item %}Announcements{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Header Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <select style="padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                <option>All Categories</option>
+                <option>General</option>
+                <option>Exam</option>
+                <option>Event</option>
+            </select>
+        </div>
+        <button style="padding: 0.65rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: var(--transition);">
+            <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> New Announcement
+        </button>
+    </div>
+
+    <!-- Announcements List -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Featured Announcement -->
+        <div class="card" style="border-left: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="padding: 0.25rem 0.75rem; background: var(--primary); color: white; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Important</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">January 15, 2026</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                    </button>
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-trash" style="color: var(--text-muted);"></i>
+                    </button>
+                </div>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">Midterm Examination Schedule Released</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+                The midterm examination schedule for all classes has been finalized. Please review the schedule and ensure all students are informed. Exams will begin on January 20th and continue through January 30th.
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-user"></i>
+                    <span>Admin</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-eye"></i>
+                    <span>234 views</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regular Announcement -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">General</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">January 12, 2026</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                    </button>
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-trash" style="color: var(--text-muted);"></i>
+                    </button>
+                </div>
+            </div>
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem;">Teacher Training Workshop</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+                A mandatory training workshop on new examination protocols will be held on January 18th at 2:00 PM in the main auditorium. All teachers are required to attend.
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-user"></i>
+                    <span>Juan Dela Cruz</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-eye"></i>
+                    <span>156 views</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regular Announcement -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="padding: 0.25rem 0.75rem; background: #fef3c7; color: #92400e; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Event</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">January 10, 2026</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                    </button>
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-trash" style="color: var(--text-muted);"></i>
+                    </button>
+                </div>
+            </div>
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem;">Parent-Teacher Conference</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+                The quarterly parent-teacher conference is scheduled for January 25th. Please prepare student progress reports and be available for meetings from 9:00 AM to 4:00 PM.
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-user"></i>
+                    <span>Admin</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-eye"></i>
+                    <span>189 views</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regular Announcement -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="padding: 0.25rem 0.75rem; background: #e0e7ff; color: #3730a3; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Exam</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">January 8, 2026</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                    </button>
+                    <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                        <i class="fas fa-trash" style="color: var(--text-muted);"></i>
+                    </button>
+                </div>
+            </div>
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem;">Grading Deadline Reminder</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+                Please ensure all quiz submissions from last week are graded by January 15th. Ungraded assessments will be automatically marked as pending review.
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-user"></i>
+                    <span>Juan Dela Cruz</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                    <i class="fas fa-eye"></i>
+                    <span>98 views</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,858 @@
+{% extends "base_student.html" %}
+
+{% block title %}Dashboard - Testify Examination System{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb_item %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --calm-bg: #f0fdf4;
+        --calm-primary: #16a34a;
+        --calm-secondary: #22c55e;
+        --calm-accent: #86efac;
+        --calm-danger: #fca5a5;
+        --neumorphic-shadow: 6px 6px 12px rgba(0, 0, 0, 0.08), -6px -6px 12px rgba(255, 255, 255, 0.7);
+        --neumorphic-shadow-dark: 6px 6px 12px rgba(0, 0, 0, 0.1), -6px -6px 12px rgba(255, 255, 255, 0.6);
+        --neumorphic-inset: inset 6px 6px 12px rgba(0, 0, 0, 0.08), inset -6px -6px 12px rgba(255, 255, 255, 0.7);
+    }
+
+    body {
+        background-color: var(--calm-bg) !important;
+    }
+
+    .content {
+        background-color: var(--calm-bg);
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(22, 163, 74, 0.12) 0%, rgba(34, 197, 94, 0.12) 100%);
+        border-radius: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--neumorphic-shadow);
+    }
+
+    .welcome-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        box-shadow: var(--neumorphic-shadow-dark);
+        flex-shrink: 0;
+    }
+
+    .welcome-content {
+        flex: 1;
+    }
+
+    .welcome-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #065f46;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-info {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        font-size: 0.875rem;
+        color: #047857;
+        font-weight: 500;
+    }
+
+    .welcome-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .welcome-stat i {
+        color: var(--calm-primary);
+        width: 18px;
+    }
+
+    .welcome-stats {
+        display: flex;
+        gap: 2rem;
+        margin-left: auto;
+    }
+
+    .welcome-stat-item {
+        text-align: center;
+    }
+
+    .welcome-stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #065f46;
+    }
+
+    .welcome-stat-label {
+        font-size: 0.75rem;
+        color: #047857;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    /* Neumorphic Cards */
+    .neuro-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        box-shadow: var(--neumorphic-shadow);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .neuro-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.8);
+    }
+
+    .neuro-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #065f46;
+    }
+
+    .neuro-card-header i {
+        color: var(--calm-primary);
+        width: 24px;
+        text-align: center;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-box {
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        padding: 1.25rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: var(--neumorphic-shadow);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.08), -8px -8px 16px rgba(255, 255, 255, 0.8);
+    }
+
+    .stat-box-value {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #065f46;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-box-label {
+        font-size: 0.8rem;
+        color: #047857;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    /* Charts Container */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-container {
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        box-shadow: var(--neumorphic-shadow);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .chart-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #065f46;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chart-title i {
+        color: var(--calm-primary);
+    }
+
+    canvas {
+        max-height: 250px;
+    }
+
+    /* Leaderboard */
+    .leaderboard {
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        border-radius: 1.25rem;
+        overflow: hidden;
+        box-shadow: var(--neumorphic-shadow);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .leaderboard-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #065f46;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+    }
+
+    .leaderboard-header i {
+        color: var(--calm-primary);
+    }
+
+    .leaderboard-body {
+        padding: 0;
+    }
+
+    .leaderboard-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(34, 197, 94, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .leaderboard-item:last-child {
+        border-bottom: none;
+    }
+
+    .leaderboard-item:hover {
+        background-color: rgba(34, 197, 94, 0.05);
+    }
+
+    .leaderboard-rank {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+        font-size: 0.875rem;
+    }
+
+    .leaderboard-rank.gold { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
+    .leaderboard-rank.silver { background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); color: #374151; }
+    .leaderboard-rank.bronze { background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%); }
+
+    .leaderboard-info {
+        flex: 1;
+    }
+
+    .leaderboard-name {
+        font-weight: 600;
+        color: #065f46;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .leaderboard-meta {
+        font-size: 0.75rem;
+        color: #047857;
+        font-weight: 500;
+    }
+
+    .leaderboard-score {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: #065f46;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        box-shadow: var(--neumorphic-shadow);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    .quick-actions-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #065f46;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .quick-actions-title i {
+        color: var(--calm-primary);
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .action-btn {
+        padding: 1rem;
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        color: #065f46;
+        border: 2px solid transparent;
+        border-radius: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        box-shadow: var(--neumorphic-shadow);
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px);
+        border-color: var(--calm-primary);
+        color: #065f46;
+        box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.8);
+    }
+
+    .action-btn i {
+        font-size: 1.5rem;
+        color: var(--calm-primary);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        margin: 1rem 0;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        color: #065f46;
+        font-weight: 600;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: rgba(34, 197, 94, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--neumorphic-inset);
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    @media (max-width: 1024px) {
+        .welcome-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .welcome-stats {
+            margin-left: 0;
+            justify-content: center;
+        }
+
+        .welcome-info {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .welcome-title {
+            font-size: 1.25rem;
+        }
+
+        .welcome-avatar {
+            width: 70px;
+            height: 70px;
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-avatar">👤</div>
+        <div class="welcome-content">
+            <h1 class="welcome-title">Welcome, Delos Santos, Gerald P.!</h1>
+            <div class="welcome-info">
+                <div class="welcome-stat">
+                    <i class="fas fa-id-card"></i>
+                    <span>241-0288</span>
+                </div>
+                <div class="welcome-stat">
+                    <i class="fas fa-users"></i>
+                    <span>BSIT SD 2A</span>
+                </div>
+                <div class="welcome-stat">
+                    <i class="fas fa-envelope"></i>
+                    <span>geraldp04@gmail.com</span>
+                </div>
+            </div>
+        </div>
+        <div class="welcome-stats">
+            <div class="welcome-stat-item">
+                <div class="welcome-stat-value">5</div>
+                <div class="welcome-stat-label">Quizzes Taken</div>
+            </div>
+            <div class="welcome-stat-item">
+                <div class="welcome-stat-value">80%</div>
+                <div class="welcome-stat-label">Average Score</div>
+            </div>
+            <div class="welcome-stat-item">
+                <div class="welcome-stat-value">#2</div>
+                <div class="welcome-stat-label">Class Rank</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-box-value">3</div>
+            <div class="stat-box-label">Upcoming Exams</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">12</div>
+            <div class="stat-box-label">Completed Tests</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">5</div>
+            <div class="stat-box-label">Active Classes</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">92%</div>
+            <div class="stat-box-label">Attendance Rate</div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+        <!-- Performance Chart -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-line"></i>
+                Performance Over Time
+            </div>
+            <canvas id="performanceChart"></canvas>
+        </div>
+
+        <!-- Subjects Performance -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-bar"></i>
+                Subjects Performance
+            </div>
+            <canvas id="subjectsChart"></canvas>
+        </div>
+
+        <!-- Score Distribution -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-pie"></i>
+                Score Distribution
+            </div>
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Content Grid with Leaderboard -->
+    <div class="charts-grid">
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <i class="fas fa-trophy"></i>
+                Class Leaderboard
+            </div>
+            <div class="leaderboard-body">
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank gold">1</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">Maria Santos</div>
+                        <div class="leaderboard-meta">BSIT SD 2A</div>
+                    </div>
+                    <div class="leaderboard-score">95%</div>
+                </div>
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank gold">2</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">Gerald P. Delos Santos</div>
+                        <div class="leaderboard-meta">BSIT SD 2A</div>
+                    </div>
+                    <div class="leaderboard-score">92%</div>
+                </div>
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank silver">3</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">Juan dela Cruz</div>
+                        <div class="leaderboard-meta">BSIT SD 2A</div>
+                    </div>
+                    <div class="leaderboard-score">88%</div>
+                </div>
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank bronze">4</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">Maria Elena Reyes</div>
+                        <div class="leaderboard-meta">BSIT SD 2A</div>
+                    </div>
+                    <div class="leaderboard-score">85%</div>
+                </div>
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank" style="background: linear-gradient(135deg, #c7d2fe 0%, #dbeafe 100%); color: #4f46e5;">5</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">John Smith</div>
+                        <div class="leaderboard-meta">BSIT SD 2A</div>
+                    </div>
+                    <div class="leaderboard-score">82%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Tracking -->
+        <div class="neuro-card">
+            <div class="neuro-card-header">
+                <i class="fas fa-tasks"></i>
+                Progress Tracking
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Programming 2</span>
+                    <span>75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Data Structures</span>
+                    <span>82%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 82%"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Database Management</span>
+                    <span>68%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 68%"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Web Technologies</span>
+                    <span>90%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 90%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="neuro-card">
+            <div class="neuro-card-header">
+                <i class="fas fa-calendar-check"></i>
+                Upcoming Events
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="padding: 0.75rem; background: rgba(167, 139, 250, 0.08); border-radius: 0.75rem; border-left: 3px solid #a78bfa;">
+                    <div style="font-weight: 600; color: #111827; font-size: 0.9rem; margin-bottom: 0.25rem;">Programming 2 Midterm</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">Today • 7:20 AM</div>
+                </div>
+                <div style="padding: 0.75rem; background: rgba(163, 228, 215, 0.08); border-radius: 0.75rem; border-left: 3px solid #a3e4d7;">
+                    <div style="font-weight: 600; color: #111827; font-size: 0.9rem; margin-bottom: 0.25rem;">Data Structures Midterm</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">Monday • 7:20 AM</div>
+                </div>
+                <div style="padding: 0.75rem; background: rgba(255, 214, 165, 0.2); border-radius: 0.75rem; border-left: 3px solid #ffd6a5;">
+                    <div style="font-weight: 600; color: #111827; font-size: 0.9rem; margin-bottom: 0.25rem;">DBMS SQL Practical</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">Friday • 7:20 AM</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <div class="quick-actions-title">
+            <i class="fas fa-bolt"></i>
+            Quick Actions
+        </div>
+        <div class="actions-grid">
+            <a href="{{ url_for('student.exams') }}" class="action-btn">
+                <i class="fas fa-file-signature"></i>
+                View Exams
+            </a>
+            <a href="{{ url_for('student.quizzes') }}" class="action-btn">
+                <i class="fas fa-question-circle"></i>
+                Take Quiz
+            </a>
+            <a href="{{ url_for('student.my_classes') }}" class="action-btn">
+                <i class="fas fa-book-open"></i>
+                My Classes
+            </a>
+            <a href="{{ url_for('student.schedule') }}" class="action-btn">
+                <i class="fas fa-calendar-alt"></i>
+                Schedule
+            </a>
+            <a href="{{ url_for('student.results') }}" class="action-btn">
+                <i class="fas fa-chart-line"></i>
+                Results
+            </a>
+            <a href="{{ url_for('student.profile') }}" class="action-btn">
+                <i class="fas fa-user-circle"></i>
+                Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Set calm green color scheme for charts
+    const calmColors = {
+        primary: '#16a34a',
+        secondary: '#22c55e',
+        accent: '#86efac',
+        danger: '#fca5a5'
+    };
+
+    // Performance Chart (Line Chart)
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+            datasets: [{
+                label: 'Your Score',
+                data: [75, 78, 82, 79, 85, 88],
+                borderColor: calmColors.primary,
+                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: calmColors.primary,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(22, 163, 74, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#047857',
+                        font: {
+                            weight: 600
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#047857',
+                        font: {
+                            weight: 600
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Subjects Performance (Bar Chart)
+    const subjectsCtx = document.getElementById('subjectsChart').getContext('2d');
+    new Chart(subjectsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Programming', 'Data Structures', 'Database', 'Web Dev', 'Algorithms'],
+            datasets: [{
+                label: 'Score (%)',
+                data: [88, 82, 75, 90, 78],
+                backgroundColor: [
+                    'rgba(22, 163, 74, 0.8)',
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(134, 239, 172, 0.8)',
+                    'rgba(22, 163, 74, 0.6)',
+                    'rgba(34, 197, 94, 0.6)'
+                ],
+                borderColor: [
+                    calmColors.primary,
+                    calmColors.secondary,
+                    calmColors.accent,
+                    calmColors.primary,
+                    calmColors.secondary
+                ],
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(22, 163, 74, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#047857',
+                        font: {
+                            weight: 600
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#047857',
+                        font: {
+                            weight: 600
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Score Distribution (Doughnut Chart)
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent (90-100)', 'Good (80-89)', 'Fair (70-79)', 'Needs Improvement (Below 70)'],
+            datasets: [{
+                data: [45, 35, 15, 5],
+                backgroundColor: [
+                    'rgba(22, 163, 74, 0.8)',
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(134, 239, 172, 0.8)',
+                    'rgba(252, 165, 165, 0.8)'
+                ],
+                borderColor: [
+                    calmColors.primary,
+                    calmColors.secondary,
+                    calmColors.accent,
+                    calmColors.danger
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: 600
+                        },
+                        color: '#047857'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "base_admin.html" %}
+{% block title %}Subjects Management - Testify Examination System{% endblock %}
+{% block page_title %}Subjects{% endblock %}
+{% block breadcrumb_item %}Subjects{% endblock %}
+{% block extra_css %}
+<style>
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.stats-grid .stat-card{border-left:4px solid var(--primary)}
+.stats-grid .stat-card:nth-child(2){border-left-color:#22c55e}
+.stats-grid .stat-card:nth-child(2) .stat-icon{background-color:rgba(34,197,94,0.15);color:#22c55e}
+.stats-grid .stat-card:nth-child(3){border-left-color:#fb923c}
+.stats-grid .stat-card:nth-child(3) .stat-icon{background-color:rgba(251,146,60,0.15);color:#fb923c}
+.filter-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.filter-group{display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex:1}
+.filter-select{min-width:200px;padding:10px 16px;border:1px solid var(--border-color);border-radius:10px;font-size:.95em;font-family:inherit;background-color:var(--bg-white);color:var(--text-dark);cursor:pointer;transition:var(--transition);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+.filter-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.search-container{position:relative;max-width:300px;width:100%}
+.search-container input{width:100%;padding:10px 16px 10px 44px;border-radius:10px;border:1px solid var(--border-color);font-size:.95em;font-family:inherit;background-color:var(--bg-white);transition:var(--transition)}
+.search-container input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.search-container i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:1em}
+.clear-filters-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-white);color:var(--text-gray);font-size:.9em;font-weight:500;cursor:pointer;transition:var(--transition);font-family:inherit}
+.clear-filters-btn:hover{border-color:#ff6b6b;color:#ff6b6b;background:rgba(255,107,107,0.05)}
+.clear-filters-btn.hidden{display:none}
+.modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:2000;opacity:0;visibility:hidden;transition:all .3s ease}
+.modal-backdrop.active{opacity:1;visibility:visible}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2001;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s ease;padding:20px}
+.modal.active{opacity:1;visibility:visible}
+.modal-dialog{background:var(--bg-white);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-width:500px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(0.9) translateY(20px);transition:all .3s cubic-bezier(0.4,0,0.2,1)}
+.modal.active .modal-dialog{transform:scale(1) translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-color);flex-shrink:0}
+.modal-title-wrap{flex:1;min-width:0}
+.modal-title{font-size:1.1em;font-weight:700;color:var(--text-dark);display:flex;align-items:center;gap:10px}
+.modal-title i{color:var(--primary)}
+.modal-subtitle{font-size:.9em;color:var(--text-gray);margin-top:4px}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid var(--border-color);background:var(--bg-light);flex-shrink:0}
+.modal-close{background:none;border:none;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-gray);transition:var(--transition);font-size:1.2em;flex-shrink:0;margin-left:12px}
+.modal-close:hover{background:var(--bg-light);color:var(--primary)}
+.form-group{margin-bottom:20px}
+.form-group:last-child{margin-bottom:0}
+.form-label{display:block;font-weight:600;color:var(--text-dark);margin-bottom:8px;font-size:.9em}
+.form-control{width:100%;padding:12px 16px;border:1px solid var(--border-color);border-radius:10px;font-size:.95em;font-family:inherit;background-color:var(--bg-white);color:var(--text-dark);transition:var(--transition)}
+.form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.form-select{width:100%;padding:12px 16px;border:1px solid var(--border-color);border-radius:10px;font-size:.95em;font-family:inherit;background-color:var(--bg-white);color:var(--text-dark);cursor:pointer;transition:var(--transition);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+.form-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.action-btn{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:none;cursor:pointer;transition:all .2s ease;margin:0 3px;font-size:.95em;background:transparent}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+.btn-edit{background-color:rgba(34,197,94,0.12);color:#22c55e}
+.btn-edit:hover{background-color:#22c55e;color:white}
+.btn-delete{background-color:rgba(255,107,107,0.12);color:#ff6b6b}
+.btn-delete:hover{background-color:#ff6b6b;color:white}
+.pagination-container{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-color)}
+.pagination-btn{padding:8px 16px;border:1px solid var(--border-color);background:var(--bg-white);color:var(--text-dark);border-radius:8px;cursor:pointer;font-weight:500;transition:var(--transition);font-family:inherit;font-size:.9em;min-height:40px;display:inline-flex;align-items:center;gap:8px}
+.pagination-btn:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+.pagination-btn:disabled{opacity:.5;cursor:not-allowed}
+.pagination-info{font-size:.9em;color:var(--text-gray);font-weight:500;padding:0 12px}
+.empty-state{text-align:center;padding:60px 24px}
+.empty-state-icon{font-size:3.5em;color:var(--text-light);margin-bottom:20px;display:inline-block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.empty-state h3{color:var(--text-dark);font-size:1.2em;font-weight:600;margin-bottom:8px}
+.empty-state p{color:var(--text-gray);font-size:1em;margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto}
+.skeleton{background:linear-gradient(90deg,var(--bg-secondary) 25%,#e8ecef 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-row{display:flex;gap:16px;padding:16px;border-bottom:1px solid var(--border-color);align-items:center}
+.skeleton-row:last-child{border-bottom:none}
+.skeleton-text{height:16px;flex:1}
+.skeleton-text.short{flex:.5}
+.skeleton-badge{height:24px;width:60px;border-radius:20px}
+.skeleton-actions{height:40px;width:90px;border-radius:10px}
+.table-responsive{overflow-x:auto;border-radius:12px}
+#subjectsTable{width:100%;border-collapse:collapse;font-size:.95em}
+#subjectsTable thead{background-color:var(--bg-secondary)}
+#subjectsTable thead th{padding:16px;text-align:left;font-weight:600;color:var(--text-dark);border-bottom:2px solid var(--border-color);white-space:nowrap}
+#subjectsTable tbody td{padding:16px;border-bottom:1px solid var(--border-color);color:var(--text-gray);vertical-align:middle}
+#subjectsTable tbody tr{transition:var(--transition)}
+#subjectsTable tbody tr:hover{background-color:rgba(108,92,231,0.05)}
+#subjectsTable tbody tr:last-child td{border-bottom:none}
+.subject-code{font-weight:600;color:var(--primary);font-size:.95em}
+.subject-name{font-weight:500;color:var(--text-dark)}
+.subjects-card-grid{display:none}
+.subject-card{background:var(--bg-white);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;transition:var(--transition)}
+.subject-card:hover{box-shadow:var(--shadow-md);border-color:var(--primary-light)}
+.subject-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.subject-card-code{font-weight:700;color:var(--primary);font-size:1.1em}
+.subject-card-name{font-weight:500;color:var(--text-dark);margin-bottom:12px;line-height:1.4}
+.subject-card-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.subject-card-actions{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border-color)}
+.subject-card-actions .action-btn{flex:1;width:auto;height:44px;margin:0;font-size:1em}
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}.filter-select{min-width:160px}}
+@media(max-width:768px){.stats-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.stats-grid .stat-card{padding:16px;gap:12px}.stats-grid .stat-icon{width:44px;height:44px;font-size:1.2em}.stats-grid .stat-content .stat-value{font-size:1.5em}.filter-bar{flex-direction:column;align-items:stretch;gap:12px}.filter-group{flex-direction:column;width:100%;gap:10px}.filter-select,.search-container{max-width:100%;width:100%}.clear-filters-btn{width:100%;justify-content:center}.table-responsive{display:none}.subjects-card-grid{display:block}.pagination-container{flex-wrap:wrap;gap:8px}.pagination-info{width:100%;text-align:center;order:-1;padding:0;margin-bottom:4px}.modal-dialog{max-width:100%;margin:0;max-height:100vh;border-radius:0}.modal{padding:0}.modal-header,.modal-body,.modal-footer{padding-left:20px;padding-right:20px}.empty-state{padding:40px 16px}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.stats-grid .stat-card:last-child{grid-column:1 / -1}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="fade-in">
+<div class="stats-grid" id="statsContainer">
+<div class="stat-card"><div class="stat-icon"><i class="fas fa-book"></i></div><div class="stat-content"><h3>Total Subjects</h3><div class="stat-value" id="statTotalSubjects">-</div></div></div>
+<div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-content"><h3>Programs</h3><div class="stat-value" id="statTotalPrograms">-</div></div></div>
+<div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-alt"></i></div><div class="stat-content"><h3>Year Levels</h3><div class="stat-value" id="statYearLevels">-</div></div></div>
+</div>
+<div class="filter-bar">
+<div class="filter-group">
+<select id="programFilter" class="filter-select" aria-label="Filter by program"><option value="">All Programs</option>{% for program in programs %}<option value="{{ program.program_id }}">{{ program.program_code }} - {{ program.program_name }}</option>{% endfor %}</select>
+<select id="yearFilter" class="filter-select" aria-label="Filter by year level"><option value="">All Years</option><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option><option value="4">4th Year</option></select>
+<select id="specializationFilter" class="filter-select" aria-label="Filter by specialization" disabled><option value="">All Specializations</option></select>
+<div class="search-container"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search subjects by code or name..." aria-label="Search subjects"></div>
+<button class="clear-filters-btn hidden" id="clearFiltersBtn" onclick="clearFilters()"><i class="fas fa-times"></i> Clear Filters</button>
+</div>
+<button class="btn btn-primary" onclick="openAddSubjectModal()"><i class="fas fa-plus"></i> Add Subject</button>
+</div>
+<div class="card">
+<div class="card-header"><h2 class="card-title">Subjects Directory</h2><span class="badge badge-primary" id="resultCount" style="display:none">0 subjects</span></div>
+<div id="skeletonLoader">
+<div class="skeleton-row"><div class="skeleton-text short"></div><div class="skeleton-text"></div><div class="skeleton-badge"></div><div class="skeleton-badge"></div><div class="skeleton-actions"></div></div>
+<div class="skeleton-row"><div class="skeleton-text short"></div><div class="skeleton-text"></div><div class="skeleton-badge"></div><div class="skeleton-badge"></div><div class="skeleton-actions"></div></div>
+<div class="skeleton-row"><div class="skeleton-text short"></div><div class="skeleton-text"></div><div class="skeleton-badge"></div><div class="skeleton-badge"></div><div class="skeleton-actions"></div></div>
+</div>
+<div class="table-responsive" id="tableContainer" style="display:none">
+<table id="subjectsTable">
+<thead><tr><th>Subject Code</th><th>Subject Name</th><th>Program</th><th>Year Level</th><th>Specialization</th><th style="width:120px;text-align:center">Actions</th></tr></thead>
+<tbody id="subjectsTableBody"></tbody>
+</table>
+</div>
+<div class="subjects-card-grid" id="cardGridContainer" style="display:none"></div>
+<div id="emptyState" class="empty-state" style="display:none">
+<i class="fas fa-book-open empty-state-icon"></i>
+<h3>No subjects found</h3>
+<p>No subjects match your current filters. Try adjusting your search or add a new subject.</p>
+<button class="btn btn-primary" onclick="openAddSubjectModal()"><i class="fas fa-plus"></i> Add Subject</button>
+</div>
+<div class="pagination-container" id="paginationContainer" style="display:none">
+<button class="pagination-btn" id="prevBtn" onclick="changePage(-1)" aria-label="Previous page"><i class="fas fa-chevron-left"></i> Previous</button>
+<span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+<button class="pagination-btn" id="nextBtn" onclick="changePage(1)" aria-label="Next page">Next <i class="fas fa-chevron-right"></i></button>
+</div>
+</div>
+</div>
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeAllModals()"></div>
+<div class="modal" id="addSubjectModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+<div class="modal-dialog">
+<div class="modal-header">
+<div class="modal-title-wrap">
+<h5 class="modal-title" id="addModalTitle"><i class="fas fa-plus-circle"></i> Create Subject</h5>
+<div class="modal-subtitle">Enter the details for the new subject.</div>
+</div>
+<button class="modal-close" onclick="closeModal('addSubjectModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+</div>
+<div class="modal-body">
+<form id="addSubjectForm">
+<div class="form-group"><label class="form-label" for="addSubjectCode">Subject Code</label><input type="text" class="form-control" id="addSubjectCode" name="subject_code" required maxlength="20" placeholder="e.g., CS101"></div>
+<div class="form-group"><label class="form-label" for="addSubjectName">Subject Name</label><input type="text" class="form-control" id="addSubjectName" name="subject_name" required maxlength="100" placeholder="e.g., Introduction to Computer Science"></div>
+<div class="form-group"><label class="form-label" for="addSubjectProgram">Program</label><select class="form-select" name="program_id" id="addSubjectProgram" required><option value="">Select Program</option>{% for program in programs %}<option value="{{ program.program_id }}">{{ program.program_code }} - {{ program.program_name }}</option>{% endfor %}</select></div>
+<div class="form-group"><label class="form-label" for="addSubjectYear">Year Level</label><select class="form-select" name="year_level" id="addSubjectYear" required><option value="">Select Year Level</option><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option><option value="4">4th Year</option></select></div>
+<div class="form-group" id="addSpecializationGroup" style="display:none"><label class="form-label" for="addSubjectSpecialization">Specialization</label><select class="form-select" name="specialization_id" id="addSubjectSpecialization"><option value="">No Specialization</option></select></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeModal('addSubjectModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitAddSubject()"><i class="fas fa-spinner fa-spin" id="addSubjectSpinner" style="display:none"></i> Create Subject</button>
+</div>
+</div>
+</div>
+<div class="modal" id="editSubjectModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+<div class="modal-dialog">
+<div class="modal-header">
+<div class="modal-title-wrap">
+<h5 class="modal-title" id="editModalTitle"><i class="fas fa-edit"></i> Edit Subject</h5>
+<div class="modal-subtitle">Update the subject details.</div>
+</div>
+<button class="modal-close" onclick="closeModal('editSubjectModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+</div>
+<div class="modal-body">
+<form id="editSubjectForm">
+<input type="hidden" name="subject_id" id="editSubjectId">
+<div class="form-group"><label class="form-label" for="editSubjectCode">Subject Code</label><input type="text" class="form-control" name="subject_code" id="editSubjectCode" required maxlength="20"></div>
+<div class="form-group"><label class="form-label" for="editSubjectName">Subject Name</label><input type="text" class="form-control" name="subject_name" id="editSubjectName" required maxlength="100"></div>
+<div class="form-group"><label class="form-label" for="editSubjectProgram">Program</label><select class="form-select" name="program_id" id="editSubjectProgram" required><option value="">Select Program</option>{% for program in programs %}<option value="{{ program.program_id }}">{{ program.program_code }} - {{ program.program_name }}</option>{% endfor %}</select></div>
+<div class="form-group"><label class="form-label" for="editSubjectYearLevel">Year Level</label><select class="form-select" name="year_level" id="editSubjectYearLevel" required><option value="1">1st Year</option><option value="2">2nd Year</option><option value="3">3rd Year</option><option value="4">4th Year</option></select></div>
+<div class="form-group" id="editSpecializationGroup" style="display:none"><label class="form-label" for="editSubjectSpecialization">Specialization</label><select class="form-select" name="specialization_id" id="editSubjectSpecialization"><option value="">No Specialization</option></select></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeModal('editSubjectModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitEditSubject()"><i class="fas fa-spinner fa-spin" id="editSubjectSpinner" style="display:none"></i> Save Changes</button>
+</div>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('admin.static', filename='js/subjects.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,359 @@
+{% extends "base_admin.html" %}
+{% block title %}Course Assignments - Testify Examination System{% endblock %}
+{% block page_title %}Course Assignments{% endblock %}
+{% block breadcrumb_item %}Course Assignments{% endblock %}
+{% block extra_css %}
+<style>
+/* ============================================
+   PAGE ACTIONS BAR (always visible)
+   ============================================ */
+.page-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.page-actions-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.page-actions-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.checked-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:rgba(108,92,231,0.1);color:var(--primary);border-radius:10px;font-size:.88em;font-weight:600;cursor:default}
+.checked-badge i{font-size:.95em}
+.btn-view-checked{background:rgba(108,92,231,0.1);color:var(--primary);border:1px solid rgba(108,92,231,0.25)}
+.btn-view-checked:hover{background:var(--primary);color:white;border-color:var(--primary)}
+.multi-active-indicator{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(34,197,94,0.1);color:#22c55e;border-radius:8px;font-size:.82em;font-weight:600}
+.multi-active-indicator::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse-dot 1.5s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ============================================
+   FILTER SECTION
+   ============================================ */
+.filter-section{background:var(--bg-white);border-radius:14px;padding:24px;box-shadow:var(--shadow-sm);border:1px solid var(--border-color);margin-bottom:24px}
+.filter-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.filter-section-title{font-size:1.05em;font-weight:700;color:var(--text-dark);display:flex;align-items:center;gap:10px}
+.filter-section-title i{color:var(--primary);font-size:1.1em}
+.filter-hint{font-size:.85em;color:var(--text-gray);font-style:italic;display:flex;align-items:center;gap:6px}
+.filter-hint i{color:var(--primary)}
+.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;align-items:end}
+.filter-group-item{display:flex;flex-direction:column;gap:6px}
+.filter-group-item label{font-size:.82em;font-weight:600;color:var(--text-gray);text-transform:uppercase;letter-spacing:.5px}
+.filter-select{width:100%;padding:10px 40px 10px 14px;border:1px solid var(--border-color);border-radius:10px;font-size:.93em;font-family:inherit;background-color:var(--bg-white);color:var(--text-dark);cursor:pointer;transition:var(--transition);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.filter-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.filter-select:disabled{opacity:.5;cursor:not-allowed;background-color:var(--bg-secondary)}
+/* Global block search autocomplete */
+.block-search-section{position:relative;margin-bottom:20px}
+.block-search-bar{display:flex;align-items:center;gap:12px}
+.block-search-bar label{font-size:.88em;font-weight:600;color:var(--text-dark);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.block-search-bar label i{color:var(--primary)}
+.block-search-field{position:relative;flex:1;max-width:420px}
+.block-search-field input{width:100%;padding:11px 16px 11px 40px;border:1px solid var(--border-color);border-radius:10px;font-size:.93em;font-family:inherit;transition:var(--transition);background:var(--bg-white)}
+.block-search-field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.block-search-field>i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-light);pointer-events:none}
+.block-autocomplete{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--bg-white);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);max-height:260px;overflow-y:auto;z-index:500;display:none}
+.block-autocomplete.visible{display:block}
+.block-ac-item{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;transition:var(--transition);border-bottom:1px solid var(--border-color)}
+.block-ac-item:last-child{border-bottom:none}
+.block-ac-item:hover,.block-ac-item.focused{background:rgba(108,92,231,0.06)}
+.block-ac-name{font-weight:600;color:var(--primary);font-size:.92em}
+.block-ac-program{font-size:.82em;color:var(--text-gray)}
+.block-ac-empty{padding:20px;text-align:center;color:var(--text-light);font-size:.9em}
+
+/* ============================================
+   ASSIGNMENT TABLE
+   ============================================ */
+.assignments-card{background:var(--bg-white);border-radius:14px;box-shadow:var(--shadow-sm);border:1px solid var(--border-color);overflow:hidden}
+.assignments-card .card-header{padding:20px 24px;margin:0;border-radius:0}
+.assignments-table-wrap{overflow-x:auto}
+#assignmentsTable{width:100%;border-collapse:collapse;font-size:.93em}
+#assignmentsTable thead{background:var(--bg-secondary);position:sticky;top:0;z-index:10}
+#assignmentsTable thead th{padding:14px 18px;text-align:left;font-weight:600;color:var(--text-dark);border-bottom:2px solid var(--border-color);white-space:nowrap;user-select:none}
+#assignmentsTable tbody td{padding:14px 18px;border-bottom:1px solid var(--border-color);color:var(--text-gray);vertical-align:middle}
+#assignmentsTable tbody tr{transition:var(--transition)}
+#assignmentsTable tbody tr:hover{background:rgba(108,92,231,0.04)}
+#assignmentsTable tbody tr:last-child td{border-bottom:none}
+#assignmentsTable .checkbox-col{width:40px;text-align:center}
+#assignmentsTable input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--primary)}
+.course-code{font-weight:700;color:var(--primary);font-size:.93em;letter-spacing:.3px}
+.subject-name{font-weight:500;color:var(--text-dark)}
+.block-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;background:rgba(108,92,231,0.08);color:var(--primary);border-radius:8px;font-size:.85em;font-weight:600}
+.teacher-name{font-weight:500;color:var(--text-dark)}
+.teacher-name.unassigned{color:var(--text-light);font-style:italic}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:.8em;font-weight:600}
+.status-pending{background:rgba(251,146,60,0.12);color:#e67e22}
+.status-pending::before{content:'';width:6px;height:6px;border-radius:50%;background:#e67e22;display:inline-block}
+.status-assigned{background:rgba(34,197,94,0.12);color:#22c55e}
+.status-assigned::before{content:'';width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block}
+.action-btn{padding:7px 16px;border:none;border-radius:8px;font-size:.85em;font-weight:600;cursor:pointer;transition:all .2s ease;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.action-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,0.12)}
+.btn-assign{background:rgba(108,92,231,0.1);color:var(--primary)}
+.btn-assign:hover{background:var(--primary);color:white}
+.btn-unassign{background:rgba(255,107,107,0.1);color:#ff6b6b}
+.btn-unassign:hover{background:#ff6b6b;color:white}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+.modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:2000;opacity:0;visibility:hidden;transition:all .3s ease}
+.modal-backdrop.active{opacity:1;visibility:visible}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2001;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s ease;padding:20px}
+.modal.active{opacity:1;visibility:visible}
+.modal-dialog{background:var(--bg-white);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-width:700px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(0.92) translateY(20px);transition:all .3s cubic-bezier(0.4,0,0.2,1)}
+.modal.active .modal-dialog{transform:scale(1) translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-color);flex-shrink:0}
+.modal-title-wrap{flex:1;min-width:0}
+.modal-title{font-size:1.1em;font-weight:700;color:var(--text-dark);display:flex;align-items:center;gap:10px}
+.modal-title i{color:var(--primary)}
+.modal-subtitle{font-size:.88em;color:var(--text-gray);margin-top:4px}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid var(--border-color);background:var(--bg-light);flex-shrink:0}
+.modal-close{background:none;border:none;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-gray);transition:var(--transition);font-size:1.2em;flex-shrink:0;margin-left:12px}
+.modal-close:hover{background:var(--bg-light);color:var(--primary)}
+.modal-search-bar{display:flex;gap:12px;margin-bottom:16px}
+.modal-search-input{flex:1;position:relative}
+.modal-search-input input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--border-color);border-radius:10px;font-size:.93em;font-family:inherit;transition:var(--transition)}
+.modal-search-input input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.modal-search-input i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-light)}
+.modal-dept-filter{min-width:180px}
+.modal-dept-filter select{width:100%;padding:10px 36px 10px 14px;border:1px solid var(--border-color);border-radius:10px;font-size:.93em;font-family:inherit;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;transition:var(--transition)}
+.modal-dept-filter select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.teachers-modal-table-wrap{max-height:340px;overflow-y:auto;border:1px solid var(--border-color);border-radius:10px}
+.teachers-modal-table-wrap::-webkit-scrollbar{width:6px}
+.teachers-modal-table-wrap::-webkit-scrollbar-track{background:var(--bg-light)}
+.teachers-modal-table-wrap::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px}
+#teacherModalTable{width:100%;border-collapse:collapse;font-size:.9em}
+#teacherModalTable thead{background:var(--bg-secondary);position:sticky;top:0;z-index:5}
+#teacherModalTable thead th{padding:12px 14px;text-align:left;font-weight:600;color:var(--text-dark);border-bottom:2px solid var(--border-color);white-space:nowrap}
+#teacherModalTable tbody td{padding:11px 14px;border-bottom:1px solid var(--border-color);color:var(--text-gray)}
+#teacherModalTable tbody tr{transition:var(--transition);cursor:pointer}
+#teacherModalTable tbody tr:hover{background:rgba(108,92,231,0.06)}
+#teacherModalTable tbody tr.selected{background:rgba(108,92,231,0.12);border-left:3px solid var(--primary)}
+#teacherModalTable tbody tr.selected td{color:var(--text-dark);font-weight:500}
+#teacherModalTable tbody tr:last-child td{border-bottom:none}
+.modal-empty-state{text-align:center;padding:40px 20px;color:var(--text-light)}
+.modal-empty-state i{font-size:2.5em;margin-bottom:12px;display:block}
+.modal-empty-state p{font-size:.95em;color:var(--text-gray)}
+
+/* View Checked modal list */
+.checked-list{list-style:none;padding:0;margin:0}
+.checked-list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-color);transition:var(--transition)}
+.checked-list-item:last-child{border-bottom:none}
+.checked-list-item:hover{background:rgba(108,92,231,0.03)}
+.checked-item-info{display:flex;flex-direction:column;gap:2px}
+.checked-item-code{font-weight:700;color:var(--primary);font-size:.9em}
+.checked-item-name{font-size:.88em;color:var(--text-dark)}
+.checked-item-block{font-size:.82em;color:var(--text-gray)}
+.checked-item-remove{background:none;border:none;color:var(--text-light);cursor:pointer;font-size:1.1em;padding:6px;border-radius:6px;transition:var(--transition)}
+.checked-item-remove:hover{color:#ff6b6b;background:rgba(255,107,107,0.1)}
+
+/* ============================================
+   EMPTY & LOADING STATES
+   ============================================ */
+.empty-state{text-align:center;padding:60px 24px}
+.empty-state-icon{font-size:3.5em;color:var(--text-light);margin-bottom:20px;display:inline-block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.empty-state h3{color:var(--text-dark);font-size:1.15em;font-weight:600;margin-bottom:8px}
+.empty-state p{color:var(--text-gray);font-size:.95em;max-width:420px;margin:0 auto}
+.skeleton{background:linear-gradient(90deg,var(--bg-secondary) 25%,#e8ecef 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-row{display:flex;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border-color);align-items:center}
+.skeleton-row:last-child{border-bottom:none}
+.skeleton-text{height:16px;flex:1}
+.skeleton-text.short{flex:.4}
+.skeleton-badge{height:24px;width:70px;border-radius:20px}
+.skeleton-actions{height:32px;width:80px;border-radius:8px}
+.info-banner{display:flex;align-items:center;gap:12px;padding:14px 20px;background:rgba(108,92,231,0.06);border:1px solid rgba(108,92,231,0.15);border-radius:10px;margin-bottom:20px;font-size:.9em;color:var(--text-gray)}
+.info-banner i{color:var(--primary);font-size:1.2em;flex-shrink:0}
+.toast-container{position:fixed;top:24px;right:24px;z-index:5000;display:flex;flex-direction:column;gap:10px}
+.toast{display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);font-size:.92em;font-weight:500;min-width:300px;max-width:420px;transform:translateX(120%);transition:transform .35s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px)}
+.toast.show{transform:translateX(0)}
+.toast-success{background:rgba(34,197,94,0.95);color:white}
+.toast-error{background:rgba(255,107,107,0.95);color:white}
+.toast i{font-size:1.15em}
+.toast-close{margin-left:auto;background:none;border:none;color:inherit;cursor:pointer;opacity:.7;font-size:1.1em;padding:4px}
+.toast-close:hover{opacity:1}
+
+@media(max-width:1024px){.filter-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.filter-grid{grid-template-columns:1fr}.page-actions{flex-direction:column;align-items:stretch}.page-actions-right{justify-content:flex-end}.modal-dialog{max-width:100%;border-radius:0;max-height:100vh}.modal{padding:0}.modal-search-bar{flex-direction:column}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="fade-in">
+
+    <!-- Page Actions Bar — always visible -->
+    <div class="page-actions" id="pageActions">
+        <div class="page-actions-left" id="pageActionsLeft">
+            <!-- Filled dynamically when in multiple mode -->
+        </div>
+        <div class="page-actions-right" id="pageActionsRight">
+            <button class="btn btn-primary" id="btnMultipleAssign">
+                <i class="fas fa-layer-group"></i> Multiple Assign
+            </button>
+        </div>
+    </div>
+
+    <!-- Global Block Search -->
+    <div class="block-search-section" id="blockSearchSection">
+        <div class="block-search-bar">
+            <label><i class="fas fa-search"></i> Quick Search Block</label>
+            <div class="block-search-field">
+                <i class="fas fa-cube"></i>
+                <input type="text" id="blockSearchInput" placeholder="Type a block name (e.g. BSIT1A, BSCS-SD2A)..." autocomplete="off">
+                <div class="block-autocomplete" id="blockAutocomplete"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-section-header">
+            <div class="filter-section-title"><i class="fas fa-filter"></i> Filter Assignments</div>
+            <div class="filter-hint"><i class="fas fa-info-circle"></i> Select all filters to load assignments</div>
+        </div>
+        <div class="filter-grid">
+            <div class="filter-group-item">
+                <label for="filterProgram">Program</label>
+                <select id="filterProgram" class="filter-select">
+                    <option value="">Select Program</option>
+                </select>
+            </div>
+            <div class="filter-group-item" id="specFilterWrap" style="display:none">
+                <label for="filterSpecialization">Specialization</label>
+                <select id="filterSpecialization" class="filter-select">
+                    <option value="">Select Specialization</option>
+                </select>
+            </div>
+            <div class="filter-group-item">
+                <label for="filterYearLevel">Year Level</label>
+                <select id="filterYearLevel" class="filter-select" disabled>
+                    <option value="">Select Year Level</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                </select>
+            </div>
+            <div class="filter-group-item">
+                <label for="filterSection">Section</label>
+                <select id="filterSection" class="filter-select" disabled>
+                    <option value="">Select Section</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Table Card -->
+    <div class="assignments-card" id="assignmentsCard" style="display:none">
+        <div class="card-header">
+            <h2 class="card-title" id="assignmentsCardTitle">Course Assignments</h2>
+            <span class="badge badge-primary" id="assignmentCount">0 courses</span>
+        </div>
+        <div id="skeletonLoader" style="display:none">
+            <div class="skeleton-row"><div class="skeleton skeleton-text short"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-text short"></div><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-actions"></div></div>
+            <div class="skeleton-row"><div class="skeleton skeleton-text short"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-text short"></div><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-actions"></div></div>
+            <div class="skeleton-row"><div class="skeleton skeleton-text short"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-text short"></div><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-actions"></div></div>
+        </div>
+        <div class="assignments-table-wrap" id="tableContainer" style="display:none">
+            <table id="assignmentsTable">
+                <thead>
+                    <tr>
+                        <th class="checkbox-col" id="checkboxHeader" style="display:none">
+                            <input type="checkbox" id="selectAllCheckbox" title="Select all pending">
+                        </th>
+                        <th>Subject Code</th>
+                        <th>Course Code</th>
+                        <th>Subject</th>
+                        <th>Block</th>
+                        <th>Teacher</th>
+                        <th>Status</th>
+                        <th style="width:120px;text-align:center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assignmentsTableBody"></tbody>
+            </table>
+        </div>
+        <div id="emptyState" class="empty-state" style="display:none">
+            <i class="fas fa-clipboard-list empty-state-icon"></i>
+            <h3>No courses found</h3>
+            <p>No subjects exist for the selected program, year level, and section.</p>
+        </div>
+    </div>
+
+    <!-- Initial State -->
+    <div class="assignments-card" id="initialState">
+        <div style="padding:24px">
+            <div class="info-banner">
+                <i class="fas fa-hand-pointer"></i>
+                <span>Select a <strong>Program</strong>, <strong>Year Level</strong>, and <strong>Section</strong> from the filters above to view and manage course assignments.</span>
+            </div>
+            <div class="empty-state" style="padding:40px 24px">
+                <i class="fas fa-tasks empty-state-icon"></i>
+                <h3>Course Assignments</h3>
+                <p>Assign teachers to subjects for specific blocks. Use the filters to get started.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Teacher Modal -->
+<div class="modal-backdrop" id="modalBackdrop"></div>
+<div class="modal" id="assignTeacherModal" role="dialog" aria-modal="true" onclick="if(event.target===this)closeAssignModal()">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title-wrap">
+                <h5 class="modal-title"><i class="fas fa-user-plus"></i> Select Teacher</h5>
+                <div class="modal-subtitle" id="assignModalSubtitle">Choose a teacher to assign</div>
+            </div>
+            <button class="modal-close" onclick="closeAssignModal()" aria-label="Close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-search-bar">
+                <div class="modal-search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="teacherSearchInput" placeholder="Search by name or employee ID...">
+                </div>
+                <div class="modal-dept-filter">
+                    <select id="teacherDeptFilter">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+            </div>
+            <div class="teachers-modal-table-wrap">
+                <table id="teacherModalTable">
+                    <thead><tr><th>Employee ID</th><th>Teacher Name</th><th>Department</th><th>Program</th></tr></thead>
+                    <tbody id="teacherModalTableBody">
+                        <tr><td colspan="4" class="modal-empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading teachers...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeAssignModal()">Cancel</button>
+            <button class="btn btn-primary" id="btnConfirmAssign" onclick="confirmAssignTeacher()" disabled>
+                <i class="fas fa-check"></i> Assign Teacher
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View Checked Modal -->
+<div class="modal" id="viewCheckedModal" role="dialog" aria-modal="true" onclick="if(event.target===this)window._assignments.closeViewChecked()">
+    <div class="modal-dialog" style="max-width:600px">
+        <div class="modal-header">
+            <div class="modal-title-wrap">
+                <h5 class="modal-title"><i class="fas fa-list-check"></i> Checked Subjects</h5>
+                <div class="modal-subtitle" id="viewCheckedSubtitle">0 subjects selected across blocks</div>
+            </div>
+            <button class="modal-close" onclick="window._assignments.closeViewChecked()" aria-label="Close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" style="padding:0">
+            <ul class="checked-list" id="checkedListBody"></ul>
+            <div id="checkedEmptyState" class="modal-empty-state" style="display:none">
+                <i class="fas fa-clipboard-check"></i>
+                <p>No subjects checked yet. Use the checkboxes in the table to select subjects.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="window._assignments.closeViewChecked()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('admin.static', filename='js/assignments.js') }}"></script>
+{% endblock %}

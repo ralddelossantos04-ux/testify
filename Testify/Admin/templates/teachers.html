@@ -1,0 +1,373 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Teachers Management - Testify Examination System{% endblock %}
+{% block page_title %}Teachers Management{% endblock %}
+{% block breadcrumb_item %}Teachers{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stats-grid .stat-card { border-left: 4px solid var(--primary); padding: 20px; background: var(--bg-white); border-radius: 12px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); }
+    .stats-grid .stat-card:nth-child(2) { border-left-color: #3b82f6; }
+    .stats-grid .stat-card:nth-child(2) .stat-icon { background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .stats-grid .stat-card:nth-child(3) { border-left-color: #ec4899; }
+    .stats-grid .stat-card:nth-child(3) .stat-icon { background-color: rgba(236, 72, 153, 0.15); color: #ec4899; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5em; background-color: rgba(108, 92, 231, 0.15); color: var(--primary); }
+    .stat-content h3 { font-size: 0.9em; color: var(--text-gray); margin-bottom: 4px; font-weight: 600; }
+    .stat-value { font-size: 1.8em; font-weight: 700; color: var(--text-dark); }
+
+    /* Filter Bar */
+    .filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .filter-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex: 1; }
+    .filter-select { min-width: 200px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); cursor: pointer; transition: var(--transition); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+    .search-container { position: relative; max-width: 300px; width: 100%; }
+    .search-container input { width: 100%; padding: 10px 16px 10px 44px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); transition: var(--transition); }
+    .search-container input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+    .search-container i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 1em; }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .modal-backdrop.active { opacity: 1; visibility: visible; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2001; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; padding: 20px; }
+    .modal.active { opacity: 1; visibility: visible; }
+    .modal-dialog { background: var(--bg-white); border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); max-width: 500px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; transform: scale(0.9) translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal.active .modal-dialog { transform: scale(1) translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+    .modal-title { font-size: 1.1em; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+    .modal-title i { color: var(--primary); }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border-color); background: var(--bg-light); flex-shrink: 0; }
+    .modal-close { background: none; border: none; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-gray); transition: var(--transition); font-size: 1.2em; flex-shrink: 0; margin-left: 12px; }
+    .modal-close:hover { background: var(--bg-light); color: var(--primary); }
+
+    /* Form */
+    .form-group { margin-bottom: 20px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; font-size: 0.9em; }
+    .form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); transition: var(--transition); }
+    .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+    .form-select { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); cursor: pointer; transition: var(--transition); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    .form-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+
+    /* Table */
+    .table-responsive { overflow-x: auto; border-radius: 12px; }
+    #teachersTable { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+    #teachersTable thead { background-color: var(--bg-secondary); }
+    #teachersTable thead th { padding: 16px; text-align: left; font-weight: 600; color: var(--text-dark); border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+    #teachersTable tbody td { padding: 16px; border-bottom: 1px solid var(--border-color); color: var(--text-gray); vertical-align: middle; }
+    #teachersTable tbody tr { transition: var(--transition); }
+    #teachersTable tbody tr:hover { background-color: rgba(108, 92, 231, 0.05); }
+    #teachersTable tbody tr:last-child td { border-bottom: none; }
+
+    /* 3-Dot Action Menu */
+    .action-menu { position: relative; display: inline-block; }
+    .action-menu-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: var(--text-gray); transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; }
+    .action-menu-btn:hover { background: var(--bg-light); color: var(--primary); }
+    .action-menu-dropdown { position: absolute; right: 0; top: calc(100% + 4px); background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-lg); min-width: 180px; z-index: 100; display: none; overflow: hidden; }
+    .action-menu-dropdown.active { display: block; }
+    .action-menu-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 0.9em; color: var(--text-dark); border-bottom: 1px solid var(--border-color); transition: var(--transition); background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .action-menu-item:last-child { border-bottom: none; }
+    .action-menu-item:hover { background: var(--bg-light); }
+    .action-menu-item i { width: 16px; text-align: center; }
+    .action-menu-item.danger { color: #ff6b6b; }
+    .action-menu-item.danger:hover { background: rgba(255, 107, 107, 0.1); }
+    .action-menu-item.warning { color: #fb923c; }
+    .action-menu-item.warning:hover { background: rgba(251, 146, 60, 0.1); }
+
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap; }
+    .pagination-btn { padding: 8px 16px; border: 1px solid var(--border-color); background: var(--bg-white); color: var(--text-dark); border-radius: 8px; cursor: pointer; font-weight: 500; transition: var(--transition); font-family: inherit; font-size: 0.9em; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; }
+    .pagination-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .pagination-info { font-size: 0.9em; color: var(--text-gray); font-weight: 500; padding: 0 12px; }
+    .per-page-select { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-white); color: var(--text-dark); font-family: inherit; font-size: 0.9em; cursor: pointer; }
+
+    /* Skeleton */
+    .skeleton { background: linear-gradient(90deg, var(--bg-secondary) 25%, #e8ecef 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-row { display: flex; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border-color); align-items: center; }
+    .skeleton-row:last-child { border-bottom: none; }
+    .skeleton-text { height: 16px; flex: 1; }
+    .skeleton-text.short { flex: 0.5; }
+    .skeleton-badge { height: 24px; width: 60px; border-radius: 20px; }
+    .skeleton-actions { height: 40px; width: 90px; border-radius: 10px; }
+
+    /* Empty State */
+    .empty-state { text-align: center; padding: 60px 24px; }
+    .empty-state-icon { font-size: 3.5em; color: var(--text-light); margin-bottom: 20px; display: inline-block; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .empty-state h3 { color: var(--text-dark); font-size: 1.2em; font-weight: 600; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-gray); font-size: 1em; margin-bottom: 20px; max-width: 400px; margin-left: auto; margin-right: auto; }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } .filter-select { min-width: 160px; } }
+    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; } .stats-grid .stat-card { padding: 16px; gap: 12px; } .stats-grid .stat-icon { width: 44px; height: 44px; font-size: 1.2em; } .stats-grid .stat-content .stat-value { font-size: 1.5em; } .filter-bar { flex-direction: column; align-items: stretch; gap: 12px; } .filter-group { flex-direction: column; width: 100%; gap: 10px; } .filter-select, .search-container { max-width: 100%; width: 100%; } .pagination-container { flex-wrap: wrap; gap: 8px; } .pagination-info { width: 100%; text-align: center; order: -1; padding: 0; margin-bottom: 4px; } .modal-dialog { max-width: 100%; margin: 0; max-height: 100vh; border-radius: 0; } .modal { padding: 0; } .modal-header, .modal-body, .modal-footer { padding-left: 20px; padding-right: 20px; } .empty-state { padding: 40px 16px; } }
+    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; } .stats-grid .stat-card:last-child { grid-column: 1 / -1; } }
+
+    /* Utility */
+    .program-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; background: rgba(108, 92, 231, 0.1); color: var(--primary); }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; }
+    .status-active { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .status-inactive { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Statistics Cards -->
+    <div class="stats-grid" id="statsContainer">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-chalkboard-user"></i></div>
+            <div class="stat-content">
+                <h3>Total Teachers</h3>
+                <div class="stat-value" id="statTotalTeachers">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-mars"></i></div>
+            <div class="stat-content">
+                <h3>Male Teachers</h3>
+                <div class="stat-value" id="statMaleTeachers">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-venus"></i></div>
+            <div class="stat-content">
+                <h3>Female Teachers</h3>
+                <div class="stat-value" id="statFemaleTeachers">-</div>
+            </div>
+        </div>
+    </div> <!-- End Stats Grid -->
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search teachers..." aria-label="Search teachers">
+            </div>
+            <select id="departmentFilter" class="filter-select" aria-label="Filter by department">
+                <option value="">All Departments</option>
+                {% for department in departments %}
+                <option value="{{ department.department_id }}">{{ department.department_name }} ({{ department.department_code }})</option>
+                {% endfor %}
+            </select>
+            <select id="statusFilter" class="filter-select" aria-label="Filter by status">
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="openAddTeacherModal()">
+            <i class="fas fa-plus"></i> Add Teacher
+        </button>
+    </div>
+
+    <!-- Teachers Table -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Teachers Directory</h2>
+            <span class="badge badge-primary" id="resultCount" style="display:none">0 teachers</span>
+        </div>
+        
+        <!-- Skeleton Loader -->
+        <div id="skeletonLoader">
+            <div class="skeleton-row">
+                <div class="skeleton-text short skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-actions skeleton"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="skeleton-text short skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-actions skeleton"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="skeleton-text short skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-actions skeleton"></div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive" id="tableContainer" style="display:none">
+            <table id="teachersTable">
+                <thead>
+                    <tr>
+                        <th>Teacher ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th style="width: 100px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="teachersTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display:none">
+            <i class="fas fa-chalkboard-user empty-state-icon"></i>
+            <h3>No teachers found</h3>
+            <p>No teachers match your current filters. Try adjusting your search or add a new teacher.</p>
+            <button class="btn btn-primary" onclick="openAddTeacherModal()"><i class="fas fa-plus"></i> Add Teacher</button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" id="paginationContainer" style="display:none">
+            <select class="per-page-select" id="perPageSelect" onchange="changePerPage(this.value)" aria-label="Rows per page">
+                <option value="10">10 rows</option>
+                <option value="20">20 rows</option>
+                <option value="50">50 rows</option>
+            </select>
+            <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)" aria-label="Previous page"><i class="fas fa-chevron-left"></i> Previous</button>
+            <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+            <div id="pageNumbers" style="display: flex; gap: 4px;"></div>
+            <button class="pagination-btn" id="nextBtn" onclick="changePage(1)" aria-label="Next page">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div> <!-- End Card -->
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeAllModals()"></div>
+
+<!-- Add Teacher Modal -->
+<div class="modal" id="addTeacherModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5 class="modal-title" id="addModalTitle"><i class="fas fa-user-plus"></i> Add New Teacher</h5>
+            <button class="modal-close" onclick="closeModal('addTeacherModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="addTeacherForm">
+                <div class="form-group">
+                    <label class="form-label" for="addFirstName">First Name</label>
+                    <input type="text" class="form-control" id="addFirstName" name="first_name" required placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addLastName">Last Name</label>
+                    <input type="text" class="form-control" id="addLastName" name="last_name" required placeholder="Enter last name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addEmail">Email</label>
+                    <input type="email" class="form-control" id="addEmail" name="email" required placeholder="Enter email address">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addGender">Gender</label>
+                    <select class="form-select" name="gender" id="addGender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addDepartment">Department</label>
+                    <select class="form-select" name="department_id" id="addDepartment" required>
+                        <option value="">Select Department</option>
+                        {% for department in departments %}
+                        <option value="{{ department.department_id }}">{{ department.department_name }} ({{ department.department_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addTeacherModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAddTeacher()">
+                <i class="fas fa-spinner fa-spin" id="addTeacherSpinner" style="display:none"></i>
+                Add Teacher
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View Teacher Modal -->
+<div class="modal" id="viewTeacherModal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+    <div class="modal-dialog" style="max-width: 600px;">
+        <div class="modal-header">
+            <h5 class="modal-title" id="viewModalTitle"><i class="fas fa-user"></i> Teacher Details</h5>
+            <button class="modal-close" onclick="closeModal('viewTeacherModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="viewTeacherContent">
+            <!-- Content will be loaded dynamically -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('viewTeacherModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Teacher Profile Modal -->
+<div class="modal" id="editTeacherModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+    <div class="modal-dialog" style="max-width: 500px;">
+        <div class="modal-header">
+            <h5 class="modal-title" id="editModalTitle"><i class="fas fa-edit"></i> Edit Teacher Profile</h5>
+            <button class="modal-close" onclick="closeModal('editTeacherModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="editTeacherForm">
+                <input type="hidden" id="editUserId" name="user_id">
+                <div class="form-group">
+                    <label class="form-label" for="editFirstName">First Name</label>
+                    <input type="text" class="form-control" id="editFirstName" name="first_name" required placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editMiddleName">Middle Name</label>
+                    <input type="text" class="form-control" id="editMiddleName" name="middle_name" placeholder="Enter middle name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editLastName">Last Name</label>
+                    <input type="text" class="form-control" id="editLastName" name="last_name" required placeholder="Enter last name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editGender">Gender</label>
+                    <select class="form-select" name="gender" id="editGender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editBirthdate">Birthdate</label>
+                    <input type="date" class="form-control" id="editBirthdate" name="birthdate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editAddress">Address</label>
+                    <input type="text" class="form-control" id="editAddress" name="address" placeholder="Enter address">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editContactNumber">Contact Number</label>
+                    <input type="text" class="form-control" id="editContactNumber" name="contact_number" placeholder="Enter contact number">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('editTeacherModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitEditTeacher()">
+                <i class="fas fa-spinner fa-spin" id="editTeacherSpinner" style="display:none"></i>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('admin.static', filename='js/teachers.js') }}"></script>
+{% endblock %}

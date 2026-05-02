@@ -1,5 +1,4 @@
 from flask import Flask, redirect, url_for
-
 from Testify.__init__ import reg_app
 
 app = Flask(__name__)

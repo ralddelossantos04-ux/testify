@@ -1,0 +1,508 @@
+// ============================================
+// TEACHERS MANAGEMENT MODULE
+// ============================================
+
+let currentPage = 1;
+let perPage = 10;
+let totalPages = 1;
+let currentSearch = '';
+let currentProgram = '';
+let currentStatus = '';
+let activeMenuId = null;
+
+// ============================================
+// CUSTOM MODAL SYSTEM
+// ============================================
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    const backdrop = document.getElementById('modalBackdrop');
+    if (modal && backdrop) {
+        closeAllModals();
+        backdrop.classList.add('active');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    const backdrop = document.getElementById('modalBackdrop');
+    if (modal) modal.classList.remove('active');
+    const anyModalOpen = document.querySelector('.modal.active');
+    if (!anyModalOpen && backdrop) {
+        backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+    const backdrop = document.getElementById('modalBackdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeAllModals();
+        closeAllActionMenus();
+    }
+});
+
+// ============================================
+// LOADING STATES
+// ============================================
+
+function showSkeleton() {
+    const skeleton = document.getElementById('skeletonLoader');
+    const table = document.getElementById('tableContainer');
+    const empty = document.getElementById('emptyState');
+    const pagination = document.getElementById('paginationContainer');
+    if (skeleton) skeleton.style.display = 'block';
+    if (table) table.style.display = 'none';
+    if (empty) empty.style.display = 'none';
+    if (pagination) pagination.style.display = 'none';
+}
+
+function hideSkeleton() {
+    const skeleton = document.getElementById('skeletonLoader');
+    if (skeleton) skeleton.style.display = 'none';
+}
+
+// ============================================
+// STATS
+// ============================================
+
+function loadStats() {
+    fetch('/api/teachers/counts')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const statTotal = document.getElementById('statTotalTeachers');
+                const statMale = document.getElementById('statMaleTeachers');
+                const statFemale = document.getElementById('statFemaleTeachers');
+                if (statTotal) statTotal.textContent = data.total;
+                if (statMale) statMale.textContent = data.male;
+                if (statFemale) statFemale.textContent = data.female;
+            }
+        })
+        .catch(error => console.error('Error loading stats:', error));
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    showSkeleton();
+    loadStats();
+    loadTeachers();
+
+    const searchInput = document.getElementById('searchInput');
+    const programFilter = document.getElementById('programFilter');
+    const statusFilter = document.getElementById('statusFilter');
+
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentSearch = this.value.trim();
+                currentPage = 1;
+                loadTeachers();
+            }, 300);
+        });
+    }
+
+    if (programFilter) {
+        programFilter.addEventListener('change', function() {
+            currentProgram = this.value;
+            currentPage = 1;
+            loadTeachers();
+        });
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            currentStatus = this.value;
+            currentPage = 1;
+            loadTeachers();
+        });
+    }
+
+    // Close action menus when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.action-menu')) {
+            closeAllActionMenus();
+        }
+    });
+});
+
+// ============================================
+// DATA LOADING
+// ============================================
+
+function loadTeachers() {
+    showSkeleton();
+
+    const params = new URLSearchParams({
+        page: currentPage,
+        per_page: perPage,
+        program_id: currentProgram,
+        status: currentStatus,
+        search: currentSearch
+    });
+
+    fetch(`/api/teachers?${params}`)
+        .then(r => r.json())
+        .then(data => {
+            hideSkeleton();
+            if (data.success) {
+                renderTeachers(data.teachers);
+                totalPages = data.total_pages;
+                updatePagination();
+                updateResultCount(data.total);
+            } else {
+                showNotification(data.message, 'error');
+                showEmptyState();
+            }
+        })
+        .catch(error => {
+            hideSkeleton();
+            console.error('Error loading teachers:', error);
+            showNotification('Failed to load teachers', 'error');
+            showEmptyState();
+        });
+}
+
+function showEmptyState() {
+    const tbody = document.getElementById('teachersTableBody');
+    const table = document.getElementById('tableContainer');
+    const empty = document.getElementById('emptyState');
+    const pagination = document.getElementById('paginationContainer');
+
+    if (tbody) tbody.innerHTML = '';
+    if (table) table.style.display = 'none';
+    if (empty) empty.style.display = 'block';
+    if (pagination) pagination.style.display = 'none';
+}
+
+// ============================================
+// TABLE RENDERING
+// ============================================
+
+function renderTeachers(teachers) {
+    const tbody = document.getElementById('teachersTableBody');
+    const emptyState = document.getElementById('emptyState');
+    const tableContainer = document.getElementById('tableContainer');
+
+    if (!teachers || teachers.length === 0) {
+        showEmptyState();
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (tableContainer) tableContainer.style.display = 'block';
+
+    if (tbody) {
+        tbody.innerHTML = teachers.map(teacher => `
+            <tr>
+                <td><strong>${escapeHtml(teacher.employee_id || 'N/A')}</strong></td>
+                <td>${escapeHtml(formatName(teacher))}</td>
+                <td>${escapeHtml(teacher.email || '')}</td>
+                <td><span class="program-badge">${escapeHtml(teacher.program_code || '')}</span></td>
+                <td><span class="badge badge-primary">0</span></td>
+                <td><span class="badge badge-success">0</span></td>
+                <td>${renderStatusBadge(teacher.status)}</td>
+                <td style="text-align: center;">
+                    <div class="action-menu">
+                        <button class="action-menu-btn" onclick="toggleActionMenu(event, '${teacher.user_id}')" title="Actions">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="action-menu-dropdown" id="actionMenu-${teacher.user_id}">
+                            <button class="action-menu-item" onclick="viewTeacher(${teacher.user_id})">
+                                <i class="fas fa-eye text-primary"></i> View
+                            </button>
+                            <button class="action-menu-item" onclick="editTeacher(${teacher.user_id})">
+                                <i class="fas fa-edit text-success"></i> Edit Profile
+                            </button>
+                            <button class="action-menu-item" onclick="assignTeacher(${teacher.user_id})">
+                                <i class="fas fa-tasks text-primary"></i> Assign
+                            </button>
+                            <button class="action-menu-item" onclick="resetTeacherPassword(${teacher.user_id})">
+                                <i class="fas fa-key text-warning"></i> Reset Password
+                            </button>
+                            <button class="action-menu-item warning" onclick="toggleTeacherStatus(${teacher.user_id}, '${teacher.status === 'Active' ? 'Inactive' : 'Active'}')">
+                                <i class="fas fa-${teacher.status === 'Active' ? 'pause' : 'play'}"></i> ${teacher.status === 'Active' ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button class="action-menu-item danger" onclick="deleteTeacher(${teacher.user_id})">
+                                <i class="fas fa-trash-alt"></i> Delete Teacher
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+function formatName(teacher) {
+    const parts = [teacher.first_name, teacher.middle_name, teacher.last_name].filter(Boolean);
+    return parts.join(' ');
+}
+
+function renderStatusBadge(status) {
+    const cls = status === 'Active' ? 'status-active' : 'status-inactive';
+    const icon = status === 'Active' ? 'fa-check-circle' : 'fa-times-circle';
+    return `<span class="status-badge ${cls}"><i class="fas ${icon}"></i> ${escapeHtml(status || 'Unknown')}</span>`;
+}
+
+// ============================================
+// 3-DOT ACTION MENU
+// ============================================
+
+function toggleActionMenu(event, userId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`actionMenu-${userId}`);
+    if (!menu) return;
+
+    if (activeMenuId === userId) {
+        closeAllActionMenus();
+        return;
+    }
+
+    closeAllActionMenus();
+    menu.classList.add('active');
+    activeMenuId = userId;
+}
+
+function closeAllActionMenus() {
+    document.querySelectorAll('.action-menu-dropdown.active').forEach(m => m.classList.remove('active'));
+    activeMenuId = null;
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+
+function updatePagination() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const paginationInfo = document.getElementById('paginationInfo');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const pageNumbers = document.getElementById('pageNumbers');
+    const perPageSelect = document.getElementById('perPageSelect');
+
+    const hasData = totalPages > 0;
+
+    if (paginationContainer) paginationContainer.style.display = hasData ? 'flex' : 'none';
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages || totalPages === 0;
+    if (paginationInfo) paginationInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+
+    if (perPageSelect) perPageSelect.value = perPage;
+
+    // Page numbers
+    if (pageNumbers) {
+        pageNumbers.innerHTML = '';
+        const maxPages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPages / 2));
+        let endPage = Math.min(totalPages, startPage + maxPages - 1);
+        if (endPage - startPage < maxPages - 1) {
+            startPage = Math.max(1, endPage - maxPages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+            btn.textContent = i;
+            btn.onclick = () => goToPage(i);
+            pageNumbers.appendChild(btn);
+        }
+    }
+}
+
+function changePage(direction) {
+    const newPage = currentPage + direction;
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        loadTeachers();
+    }
+}
+
+function goToPage(pageNum) {
+    if (pageNum >= 1 && pageNum <= totalPages && pageNum !== currentPage) {
+        currentPage = pageNum;
+        loadTeachers();
+    }
+}
+
+function changePerPage(value) {
+    perPage = parseInt(value);
+    currentPage = 1;
+    loadTeachers();
+}
+
+function updateResultCount(total) {
+    const resultCount = document.getElementById('resultCount');
+    if (resultCount) {
+        resultCount.textContent = `${total} teacher${total !== 1 ? 's' : ''}`;
+        resultCount.style.display = total > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+// ============================================
+// ADD TEACHER
+// ============================================
+
+function openAddTeacherModal() {
+    const form = document.getElementById('addTeacherForm');
+    if (form) form.reset();
+    openModal('addTeacherModal');
+}
+
+function submitAddTeacher() {
+    const form = document.getElementById('addTeacherForm');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    if (!data.first_name.trim() || !data.last_name.trim() || !data.email.trim() || !data.gender || !data.program_id) {
+        showNotification('Please fill in all fields', 'warning');
+        return;
+    }
+
+    const spinner = document.getElementById('addTeacherSpinner');
+    if (spinner) spinner.style.display = 'inline-block';
+
+    fetch('/api/teachers/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (spinner) spinner.style.display = 'none';
+        if (result.success) {
+            showNotification(result.message || 'Teacher added successfully', 'success');
+            closeModal('addTeacherModal');
+            form.reset();
+            loadStats();
+            loadTeachers();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        if (spinner) spinner.style.display = 'none';
+        console.error('Error adding teacher:', error);
+        showNotification('Failed to add teacher', 'error');
+    });
+}
+
+// ============================================
+// ACTION HANDLERS
+// ============================================
+
+function viewTeacher(userId) {
+    closeAllActionMenus();
+    showNotification(`View teacher ${userId} (coming soon)`, 'info');
+}
+
+function editTeacher(userId) {
+    closeAllActionMenus();
+    showNotification(`Edit teacher ${userId} (coming soon)`, 'info');
+}
+
+function assignTeacher(userId) {
+    closeAllActionMenus();
+    showNotification(`Assign teacher ${userId} (coming soon)`, 'info');
+}
+
+function resetTeacherPassword(userId) {
+    closeAllActionMenus();
+    if (!confirm('Are you sure you want to reset this teacher\'s password?')) return;
+    showNotification(`Password reset for teacher ${userId}`, 'success');
+}
+
+function toggleTeacherStatus(userId, newStatus) {
+    closeAllActionMenus();
+    const action = newStatus === 'Active' ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${action} this teacher?`)) return;
+
+    fetch(`/api/teachers/update-status/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (result.success) {
+            showNotification(result.message, 'success');
+            loadTeachers();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+        showNotification('Failed to update status', 'error');
+    });
+}
+
+function deleteTeacher(userId) {
+    closeAllActionMenus();
+    if (!confirm('Are you sure you want to delete this teacher? This action cannot be undone.')) return;
+
+    fetch(`/api/teachers/delete/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (result.success) {
+            showNotification(result.message, 'success');
+            loadStats();
+            loadTeachers();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting teacher:', error);
+        showNotification('Failed to delete teacher', 'error');
+    });
+}
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showNotification(message, type = 'info') {
+    document.querySelectorAll('.custom-notification').forEach(n => n.remove());
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.style.cssText = 'position: fixed; top: 24px; right: 24px; padding: 16px 24px; border-radius: 12px; color: white; font-weight: 500; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-width: 400px; word-wrap: break-word; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1)';
+    const colors = { success: '#22c55e', error: '#ff6b6b', warning: '#fb923c', info: '#3b82f6' };
+    const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    notification.style.backgroundColor = colors[type] || colors.info;
+    notification.innerHTML = `<i class="fas ${icons[type] || icons.info}" style="font-size:1.2em"></i><span>${escapeHtml(message)}</span>`;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.4s cubic-bezier(0.4,0,0.2,1) forwards';
+        setTimeout(() => notification.remove(), 400);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = '@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}';
+document.head.appendChild(style);

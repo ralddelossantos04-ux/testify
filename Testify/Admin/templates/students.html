@@ -1,0 +1,964 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Students Management - Testify Examination System{% endblock %}
+
+{% block page_title %}Students Management{% endblock %}
+
+{% block breadcrumb_item %}Students{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Statistics Cards -->
+    <div class="stats-grid" id="statsContainer">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+            <div class="stat-content">
+                <h3>Total Students</h3>
+                <div class="stat-value" id="totalStudents">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-mars"></i></div>
+            <div class="stat-content">
+                <h3>Male Students</h3>
+                <div class="stat-value" id="maleStudents">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-venus"></i></div>
+            <div class="stat-content">
+                <h3>Female Students</h3>
+                <div class="stat-value" id="femaleStudents">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search students..." aria-label="Search students">
+            </div>
+            <select id="programFilter" class="filter-select" aria-label="Filter by program">
+                <option value="">All Programs</option>
+            </select>
+            <select id="yearLevelFilter" class="filter-select" aria-label="Filter by year level">
+                <option value="">All Year Levels</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="openAddStudentModal()">
+            <i class="fas fa-plus"></i> Add Student
+        </button>
+    </div>
+
+    <!-- Students Table -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Students Directory</h2>
+            <span class="badge badge-primary" id="resultCount" style="display:none">0 students</span>
+        </div>
+        
+        <!-- Skeleton Loader -->
+        <div id="skeletonLoader">
+            <div class="skeleton-row">
+                <div class="skeleton-text short skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-actions skeleton"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="skeleton-text short skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-actions skeleton"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="skeleton-text short skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-badge skeleton"></div>
+                <div class="skeleton-actions skeleton"></div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive" id="tableContainer" style="display:none">
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Program</th>
+                        <th>Block / Section</th>
+                        <th>Year Level</th>
+                        <th>Status</th>
+                        <th style="width: 100px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display:none">
+            <i class="fas fa-user-graduate empty-state-icon"></i>
+            <h3>No students found</h3>
+            <p>No students match your current filters. Try adjusting your search or add a new student.</p>
+            <button class="btn btn-primary" onclick="openAddStudentModal()"><i class="fas fa-plus"></i> Add Student</button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" id="paginationContainer" style="display:none">
+            <select class="per-page-select" id="perPageSelect" onchange="changePerPage(this.value)" aria-label="Rows per page">
+                <option value="10">10 rows</option>
+                <option value="20">20 rows</option>
+                <option value="50">50 rows</option>
+            </select>
+            <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)" aria-label="Previous page"><i class="fas fa-chevron-left"></i> Previous</button>
+            <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+            <div id="pageNumbers" style="display: flex; gap: 4px;"></div>
+            <button class="pagination-btn" id="nextBtn" onclick="changePage(1)" aria-label="Next page">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeAllModals()"></div>
+
+<!-- Add Student Modal -->
+<div class="modal" id="addStudentModal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5 class="modal-title" id="addModalTitle"><i class="fas fa-user-plus"></i> Add New Student</h5>
+            <button class="modal-close" onclick="closeModal('addStudentModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label class="form-label" for="addFirstName">First Name</label>
+                    <input type="text" class="form-control" id="addFirstName" name="first_name" required placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addLastName">Last Name</label>
+                    <input type="text" class="form-control" id="addLastName" name="last_name" required placeholder="Enter last name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addEmail">Email</label>
+                    <input type="email" class="form-control" id="addEmail" name="email" required placeholder="Enter email address">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addProgram">Program</label>
+                    <select class="form-select" name="program_id" id="addProgram" required>
+                        <option value="">Select Program</option>
+                    </select>
+                </div>
+                <div class="form-group" id="specializationContainer" style="display: none;">
+                    <label class="form-label" for="addSpecialization">Specialization</label>
+                    <select class="form-select" name="specialization_id" id="addSpecialization">
+                        <option value="">Select Specialization</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="addYearLevel">Year Level</label>
+                    <select class="form-select" name="year_level" id="addYearLevel" required>
+                        <option value="">Select Year Level</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAddStudent()">
+                <i class="fas fa-spinner fa-spin" id="addStudentSpinner" style="display:none"></i>
+                Add Student
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View Student Modal -->
+<div class="modal" id="viewStudentModal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5 class="modal-title" id="viewModalTitle"><i class="fas fa-user"></i> Student Details</h5>
+            <button class="modal-close" onclick="closeModal('viewStudentModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="viewStudentContent" class="view-content">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('viewStudentModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stats-grid .stat-card { border-left: 4px solid var(--primary); padding: 20px; background: var(--bg-white); border-radius: 12px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); }
+    .stats-grid .stat-card:nth-child(2) { border-left-color: #22c55e; }
+    .stats-grid .stat-card:nth-child(2) .stat-icon { background-color: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .stats-grid .stat-card:nth-child(3) { border-left-color: #ec4899; }
+    .stats-grid .stat-card:nth-child(3) .stat-icon { background-color: rgba(236, 72, 153, 0.15); color: #ec4899; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5em; background-color: rgba(108, 92, 231, 0.15); color: var(--primary); }
+    .stat-content h3 { font-size: 0.9em; color: var(--text-gray); margin-bottom: 4px; font-weight: 600; }
+    .stat-value { font-size: 1.8em; font-weight: 700; color: var(--text-dark); }
+
+    /* Filter Bar */
+    .filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .filter-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex: 1; }
+    .filter-select { min-width: 200px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); cursor: pointer; transition: var(--transition); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+    .search-container { position: relative; max-width: 300px; width: 100%; }
+    .search-container input { width: 100%; padding: 10px 16px 10px 44px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); transition: var(--transition); }
+    .search-container input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+    .search-container i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 1em; }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .modal-backdrop.active { opacity: 1; visibility: visible; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2001; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; padding: 20px; }
+    .modal.active { opacity: 1; visibility: visible; }
+    .modal-dialog { background: var(--bg-white); border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); max-width: 500px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; transform: scale(0.9) translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal.active .modal-dialog { transform: scale(1) translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+    .modal-title { font-size: 1.1em; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+    .modal-title i { color: var(--primary); }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border-color); background: var(--bg-light); flex-shrink: 0; }
+    .modal-close { background: none; border: none; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-gray); transition: var(--transition); font-size: 1.2em; flex-shrink: 0; margin-left: 12px; }
+    .modal-close:hover { background: var(--bg-light); color: var(--primary); }
+
+    /* Form */
+    .form-group { margin-bottom: 20px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; font-size: 0.9em; }
+    .form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); transition: var(--transition); }
+    .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+    .form-select { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); cursor: pointer; transition: var(--transition); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    .form-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+
+    /* Table */
+    .table-responsive { overflow-x: auto; border-radius: 12px; }
+    #studentsTable { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+    #studentsTable thead { background-color: var(--bg-secondary); }
+    #studentsTable thead th { padding: 16px; text-align: left; font-weight: 600; color: var(--text-dark); border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+    #studentsTable tbody td { padding: 16px; border-bottom: 1px solid var(--border-color); color: var(--text-gray); vertical-align: middle; }
+    #studentsTable tbody tr { transition: var(--transition); }
+    #studentsTable tbody tr:hover { background-color: rgba(108, 92, 231, 0.05); }
+    #studentsTable tbody tr:last-child td { border-bottom: none; }
+
+    /* 3-Dot Action Menu */
+    .action-menu { position: relative; display: inline-block; }
+    .action-menu-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: var(--text-gray); transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; }
+    .action-menu-btn:hover { background: var(--bg-light); color: var(--primary); }
+    .action-menu-dropdown { position: absolute; right: 0; top: calc(100% + 4px); background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-lg); min-width: 180px; z-index: 100; display: none; overflow: hidden; }
+    .action-menu-dropdown.active { display: block; }
+    .action-menu-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 0.9em; color: var(--text-dark); border-bottom: 1px solid var(--border-color); transition: var(--transition); background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .action-menu-item:last-child { border-bottom: none; }
+    .action-menu-item:hover { background: var(--bg-light); }
+    .action-menu-item i { width: 16px; text-align: center; }
+    .action-menu-item.danger { color: #ff6b6b; }
+    .action-menu-item.danger:hover { background: rgba(255, 107, 107, 0.1); }
+    .action-menu-item.warning { color: #fb923c; }
+    .action-menu-item.warning:hover { background: rgba(251, 146, 60, 0.1); }
+
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap; }
+    .pagination-btn { padding: 8px 16px; border: 1px solid var(--border-color); background: var(--bg-white); color: var(--text-dark); border-radius: 8px; cursor: pointer; font-weight: 500; transition: var(--transition); font-family: inherit; font-size: 0.9em; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; }
+    .pagination-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .pagination-info { font-size: 0.9em; color: var(--text-gray); font-weight: 500; padding: 0 12px; }
+    .per-page-select { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-white); color: var(--text-dark); font-family: inherit; font-size: 0.9em; cursor: pointer; }
+
+    /* Skeleton */
+    .skeleton { background: linear-gradient(90deg, var(--bg-secondary) 25%, #e8ecef 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-row { display: flex; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border-color); align-items: center; }
+    .skeleton-row:last-child { border-bottom: none; }
+    .skeleton-text { height: 16px; flex: 1; }
+    .skeleton-text.short { flex: 0.5; }
+    .skeleton-badge { height: 24px; width: 60px; border-radius: 20px; }
+    .skeleton-actions { height: 40px; width: 90px; border-radius: 10px; }
+
+    /* Empty State */
+    .empty-state { text-align: center; padding: 60px 24px; }
+    .empty-state-icon { font-size: 3.5em; color: var(--text-light); margin-bottom: 20px; display: inline-block; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .empty-state h3 { color: var(--text-dark); font-size: 1.2em; font-weight: 600; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-gray); font-size: 1em; margin-bottom: 20px; max-width: 400px; margin-left: auto; margin-right: auto; }
+
+    /* View Content */
+    .view-content { padding: 8px 0; }
+    .view-row { display: flex; margin-bottom: 20px; }
+    .view-label { flex: 0 0 140px; font-weight: 600; color: var(--text-dark); font-size: 0.9em; }
+    .view-value { flex: 1; color: var(--text-gray); font-size: 0.95em; word-break: break-all; }
+    .view-value.strong { font-weight: 600; color: var(--text-dark); }
+    .view-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; background: rgba(108, 92, 231, 0.1); color: var(--primary); }
+    .view-row:last-child { margin-bottom: 0; }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } .filter-select { min-width: 160px; } }
+    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; } .stats-grid .stat-card { padding: 16px; gap: 12px; } .stats-grid .stat-icon { width: 44px; height: 44px; font-size: 1.2em; } .stats-grid .stat-content .stat-value { font-size: 1.5em; } .filter-bar { flex-direction: column; align-items: stretch; gap: 12px; } .filter-group { flex-direction: column; width: 100%; gap: 10px; } .filter-select, .search-container { max-width: 100%; width: 100%; } .pagination-container { flex-wrap: wrap; gap: 8px; } .pagination-info { width: 100%; text-align: center; order: -1; padding: 0; margin-bottom: 4px; } .modal-dialog { max-width: 100%; margin: 0; max-height: 100vh; border-radius: 0; } .modal { padding: 0; } .modal-header, .modal-body, .modal-footer { padding-left: 20px; padding-right: 20px; } .empty-state { padding: 40px 16px; } }
+    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; } .stats-grid .stat-card:last-child { grid-column: 1 / -1; } }
+
+    /* Utility */
+    .program-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; background: rgba(108, 92, 231, 0.1); color: var(--primary); }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; }
+    .status-active { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .status-inactive { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// STUDENTS MANAGEMENT MODULE
+// ============================================
+
+let currentPage = 1;
+let perPage = 10;
+let totalPages = 1;
+let currentSearch = '';
+let currentProgram = '';
+let currentYearLevel = '';
+let activeMenuId = null;
+
+// ============================================
+// CUSTOM MODAL SYSTEM
+// ============================================
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    const backdrop = document.getElementById('modalBackdrop');
+    if (modal && backdrop) {
+        closeAllModals();
+        backdrop.classList.add('active');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    const backdrop = document.getElementById('modalBackdrop');
+    if (modal) modal.classList.remove('active');
+    const anyModalOpen = document.querySelector('.modal.active');
+    if (!anyModalOpen && backdrop) {
+        backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+    const backdrop = document.getElementById('modalBackdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeAllModals();
+        closeAllActionMenus();
+    }
+});
+
+// ============================================
+// LOADING STATES
+// ============================================
+
+function showSkeleton() {
+    const skeleton = document.getElementById('skeletonLoader');
+    const table = document.getElementById('tableContainer');
+    const empty = document.getElementById('emptyState');
+    const pagination = document.getElementById('paginationContainer');
+    if (skeleton) skeleton.style.display = 'block';
+    if (table) table.style.display = 'none';
+    if (empty) empty.style.display = 'none';
+    if (pagination) pagination.style.display = 'none';
+}
+
+function hideSkeleton() {
+    const skeleton = document.getElementById('skeletonLoader');
+    if (skeleton) skeleton.style.display = 'none';
+}
+
+// ============================================
+// STATS
+// ============================================
+
+function loadStats() {
+    fetch('/api/students/counts')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const statTotal = document.getElementById('totalStudents');
+                const statMale = document.getElementById('maleStudents');
+                const statFemale = document.getElementById('femaleStudents');
+                if (statTotal) statTotal.textContent = data.total;
+                if (statMale) statMale.textContent = data.male;
+                if (statFemale) statFemale.textContent = data.female;
+            }
+        })
+        .catch(error => console.error('Error loading stats:', error));
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    showSkeleton();
+    loadPrograms();
+    loadStats();
+    loadStudents();
+
+    const searchInput = document.getElementById('searchInput');
+    const programFilter = document.getElementById('programFilter');
+    const yearLevelFilter = document.getElementById('yearLevelFilter');
+
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentSearch = this.value.trim();
+                currentPage = 1;
+                loadStudents();
+            }, 300);
+        });
+    }
+
+    if (programFilter) {
+        programFilter.addEventListener('change', function() {
+            currentProgram = this.value;
+            currentPage = 1;
+            loadStudents();
+        });
+    }
+
+    if (yearLevelFilter) {
+        yearLevelFilter.addEventListener('change', function() {
+            currentYearLevel = this.value;
+            currentPage = 1;
+            loadStudents();
+        });
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.action-menu')) {
+            closeAllActionMenus();
+        }
+    });
+});
+
+// ============================================
+// DATA LOADING
+// ============================================
+
+function loadPrograms() {
+    fetch('/api/programs')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const programFilter = document.getElementById('programFilter');
+                const addProgram = document.getElementById('addProgram');
+                
+                data.programs.forEach(program => {
+                    const option1 = document.createElement('option');
+                    option1.value = program.program_id;
+                    option1.textContent = `${program.program_code} - ${program.program_name}`;
+                    programFilter.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = program.program_id;
+                    option2.textContent = `${program.program_code} - ${program.program_name}`;
+                    addProgram.appendChild(option2);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading programs:', error));
+}
+
+function loadStudents() {
+    showSkeleton();
+
+    const params = new URLSearchParams({
+        page: currentPage,
+        per_page: perPage,
+        program_id: currentProgram,
+        year_level: currentYearLevel,
+        search: currentSearch
+    });
+
+    fetch(`/api/students?${params}`)
+        .then(r => r.json())
+        .then(data => {
+            hideSkeleton();
+            if (data.success) {
+                renderStudents(data.students);
+                totalPages = data.total_pages;
+                updatePagination();
+                updateResultCount(data.total);
+            } else {
+                showNotification(data.message, 'error');
+                showEmptyState();
+            }
+        })
+        .catch(error => {
+            hideSkeleton();
+            console.error('Error loading students:', error);
+            showNotification('Failed to load students', 'error');
+            showEmptyState();
+        });
+}
+
+function showEmptyState() {
+    const tbody = document.getElementById('studentsTableBody');
+    const table = document.getElementById('tableContainer');
+    const empty = document.getElementById('emptyState');
+    const pagination = document.getElementById('paginationContainer');
+
+    if (tbody) tbody.innerHTML = '';
+    if (table) table.style.display = 'none';
+    if (empty) empty.style.display = 'block';
+    if (pagination) pagination.style.display = 'none';
+}
+
+// ============================================
+// TABLE RENDERING
+// ============================================
+
+function renderStudents(students) {
+    const tbody = document.getElementById('studentsTableBody');
+    const emptyState = document.getElementById('emptyState');
+    const tableContainer = document.getElementById('tableContainer');
+
+    if (!students || students.length === 0) {
+        showEmptyState();
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (tableContainer) tableContainer.style.display = 'block';
+
+    if (tbody) {
+        tbody.innerHTML = students.map(student => `
+            <tr>
+                <td><strong>${escapeHtml(student.student_number || 'N/A')}</strong></td>
+                <td>${escapeHtml(formatName(student))}</td>
+                <td><span class="program-badge">${escapeHtml(student.program_code || '')}</span></td>
+                <td>${escapeHtml(student.block_name || 'N/A')}</td>
+                <td>${student.year_level ? student.year_level + getYearSuffix(student.year_level) + ' Year' : 'N/A'}</td>
+                <td>${renderStatusBadge(student.status)}</td>
+                <td style="text-align: center;">
+                    <div class="action-menu">
+                        <button class="action-menu-btn" onclick="toggleActionMenu(event, '${student.user_id}')" title="Actions">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="action-menu-dropdown" id="actionMenu-${student.user_id}">
+                            <button class="action-menu-item" onclick="viewStudent(${student.user_id})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-menu-item" onclick="editStudent(${student.user_id})">
+                                <i class="fas fa-edit text-success"></i> Edit
+                            </button>
+                            <button class="action-menu-item warning" onclick="toggleStudentStatus(${student.user_id}, '${(student.status || '').toLowerCase() === 'active' ? 'Inactive' : 'Active'}')">
+                                <i class="fas fa-${(student.status || '').toLowerCase() === 'active' ? 'pause' : 'play'}"></i> ${(student.status || '').toLowerCase() === 'active' ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+function formatName(student) {
+    const parts = [student.first_name, student.middle_name, student.last_name].filter(Boolean);
+    return parts.join(' ');
+}
+
+function renderStatusBadge(status) {
+    const normalizedStatus = (status || '').toLowerCase();
+    const cls = normalizedStatus === 'active' ? 'status-active' : 'status-inactive';
+    const icon = normalizedStatus === 'active' ? 'fa-check-circle' : 'fa-times-circle';
+    return `<span class="status-badge ${cls}"><i class="fas ${icon}"></i> ${escapeHtml(status || 'Unknown')}</span>`;
+}
+
+function getYearSuffix(year) {
+    if (year === 1) return 'st';
+    if (year === 2) return 'nd';
+    if (year === 3) return 'rd';
+    return 'th';
+}
+
+// ============================================
+// 3-DOT ACTION MENU
+// ============================================
+
+function toggleActionMenu(event, userId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`actionMenu-${userId}`);
+    if (!menu) return;
+
+    if (activeMenuId === userId) {
+        closeAllActionMenus();
+        return;
+    }
+
+    closeAllActionMenus();
+    menu.classList.add('active');
+    activeMenuId = userId;
+}
+
+function closeAllActionMenus() {
+    document.querySelectorAll('.action-menu-dropdown.active').forEach(m => m.classList.remove('active'));
+    activeMenuId = null;
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+
+function updatePagination() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const paginationInfo = document.getElementById('paginationInfo');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const pageNumbers = document.getElementById('pageNumbers');
+    const perPageSelect = document.getElementById('perPageSelect');
+
+    const hasData = totalPages > 0;
+
+    if (paginationContainer) paginationContainer.style.display = hasData ? 'flex' : 'none';
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages || totalPages === 0;
+    if (paginationInfo) paginationInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+
+    if (perPageSelect) perPageSelect.value = perPage;
+
+    if (pageNumbers) {
+        pageNumbers.innerHTML = '';
+        const maxPages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPages / 2));
+        let endPage = Math.min(totalPages, startPage + maxPages - 1);
+        if (endPage - startPage < maxPages - 1) {
+            startPage = Math.max(1, endPage - maxPages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+            btn.textContent = i;
+            btn.onclick = () => goToPage(i);
+            pageNumbers.appendChild(btn);
+        }
+    }
+}
+
+function changePage(direction) {
+    const newPage = currentPage + direction;
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        loadStudents();
+    }
+}
+
+function goToPage(pageNum) {
+    if (pageNum >= 1 && pageNum <= totalPages && pageNum !== currentPage) {
+        currentPage = pageNum;
+        loadStudents();
+    }
+}
+
+function changePerPage(value) {
+    perPage = parseInt(value);
+    currentPage = 1;
+    loadStudents();
+}
+
+function updateResultCount(total) {
+    const resultCount = document.getElementById('resultCount');
+    if (resultCount) {
+        resultCount.textContent = `${total} student${total !== 1 ? 's' : ''}`;
+        resultCount.style.display = total > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+// ============================================
+// ADD STUDENT
+// ============================================
+
+function openAddStudentModal() {
+    const form = document.getElementById('addStudentForm');
+    if (form) form.reset();
+    document.getElementById('specializationContainer').style.display = 'none';
+    openModal('addStudentModal');
+}
+
+function submitAddStudent() {
+    const form = document.getElementById('addStudentForm');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    if (!data.first_name.trim() || !data.last_name.trim() || !data.email.trim() || !data.program_id || !data.year_level) {
+        showNotification('Please fill in all required fields', 'warning');
+        return;
+    }
+
+    const spinner = document.getElementById('addStudentSpinner');
+    if (spinner) spinner.style.display = 'inline-block';
+
+    fetch('/api/students/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (spinner) spinner.style.display = 'none';
+        if (result.success) {
+            showNotification(result.message || 'Student added successfully', 'success');
+            closeModal('addStudentModal');
+            form.reset();
+            loadStats();
+            loadStudents();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        if (spinner) spinner.style.display = 'none';
+        console.error('Error adding student:', error);
+        showNotification('Failed to add student', 'error');
+    });
+}
+
+// Load specializations when program changes
+document.getElementById('addProgram').addEventListener('change', function() {
+    const programId = this.value;
+    if (programId) {
+        fetch(`/api/program/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.specializations && data.specializations.length > 0) {
+                    const container = document.getElementById('specializationContainer');
+                    const select = document.getElementById('addSpecialization');
+                    
+                    select.innerHTML = '<option value="">Select Specialization</option>';
+                    data.specializations.forEach(spec => {
+                        const option = document.createElement('option');
+                        option.value = spec.specialization_id;
+                        option.textContent = `${spec.specialization_code} - ${spec.specialization_name}`;
+                        select.appendChild(option);
+                    });
+                    
+                    container.style.display = 'block';
+                } else {
+                    document.getElementById('specializationContainer').style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error loading specializations:', error));
+    } else {
+        document.getElementById('specializationContainer').style.display = 'none';
+    }
+});
+
+// ============================================
+// ACTION HANDLERS
+// ============================================
+
+function viewStudent(userId) {
+    closeAllActionMenus();
+    
+    // Check if modal elements exist
+    const contentElement = document.getElementById('viewStudentContent');
+    const modal = document.getElementById('viewStudentModal');
+    
+    if (!contentElement) {
+        console.error('viewStudentContent element not found in DOM');
+        showNotification('Modal element not found', 'error');
+        return;
+    }
+    
+    if (!modal) {
+        console.error('viewStudentModal element not found in DOM');
+        showNotification('Modal element not found', 'error');
+        return;
+    }
+    
+    fetch(`/api/students/view/${userId}`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`HTTP error! status: ${r.status}`);
+            }
+            return r.json();
+        })
+        .then(result => {
+            console.log('API Response:', result);
+            
+            if (result.success && result.student) {
+                const student = result.student;
+                const content = `
+                    <div class="view-row">
+                        <div class="view-label">Student ID:</div>
+                        <div class="view-value strong">${escapeHtml(student.student_id || 'N/A')}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Student Number:</div>
+                        <div class="view-value strong">${escapeHtml(student.student_number || 'N/A')}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Full Name:</div>
+                        <div class="view-value strong">${escapeHtml([student.first_name, student.middle_name, student.last_name].filter(Boolean).join(' ') || 'N/A')}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Email:</div>
+                        <div class="view-value">${escapeHtml(student.email || 'N/A')}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Gender:</div>
+                        <div class="view-value">${escapeHtml(student.gender || 'N/A')}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Birthdate:</div>
+                        <div class="view-value">${student.birthdate ? new Date(student.birthdate).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Contact Number:</div>
+                        <div class="view-value">${escapeHtml(student.contact_number || 'N/A')}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Program:</div>
+                        <div class="view-value"><span class="view-badge">${escapeHtml(student.program_code || '')} - ${escapeHtml(student.program_name || '')}</span></div>
+                    </div>
+                    ${student.specialization_name ? `
+                    <div class="view-row">
+                        <div class="view-label">Specialization:</div>
+                        <div class="view-value"><span class="view-badge">${escapeHtml(student.specialization_code || '')} - ${escapeHtml(student.specialization_name || '')}</span></div>
+                    </div>
+                    ` : ''}
+                    <div class="view-row">
+                        <div class="view-label">Block:</div>
+                        <div class="view-value"><span class="view-badge">${escapeHtml(student.block_name || 'N/A')}</span></div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Year Level:</div>
+                        <div class="view-value">${student.year_level ? student.year_level + getYearSuffix(student.year_level) + ' Year' : 'N/A'}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Status:</div>
+                        <div class="view-value">${renderStatusBadge(student.status)}</div>
+                    </div>
+                `;
+                
+                const contentEl = document.getElementById('viewStudentContent');
+                if (contentEl) {
+                    contentEl.innerHTML = content;
+                    openModal('viewStudentModal');
+                } else {
+                    console.error('viewStudentContent element disappeared');
+                    showNotification('Error displaying student details', 'error');
+                }
+            } else {
+                console.error('API response error:', result);
+                showNotification(result.message || 'Failed to load student details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error viewing student:', error);
+            showNotification('Error loading student details: ' + error.message, 'error');
+        });
+}
+
+function editStudent(userId) {
+    closeAllActionMenus();
+    showNotification('Edit feature is coming soon', 'info');
+}
+
+function toggleStudentStatus(userId, newStatus) {
+    closeAllActionMenus();
+    const normalizedStatus = (newStatus || '').toLowerCase();
+    const action = normalizedStatus === 'active' ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${action} this student?`)) return;
+
+    fetch(`/api/students/update-status/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (result.success) {
+            showNotification(result.message, 'success');
+            loadStudents();
+            loadStats();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+        showNotification('Failed to update status', 'error');
+    });
+}
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showNotification(message, type = 'info') {
+    document.querySelectorAll('.custom-notification').forEach(n => n.remove());
+    const notification = document.createElement('div');
+    notification.className = 'custom-notification';
+    notification.style.cssText = 'position: fixed; top: 24px; right: 24px; padding: 16px 24px; border-radius: 12px; color: white; font-weight: 500; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-width: 400px; word-wrap: break-word; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1)';
+    const colors = { success: '#22c55e', error: '#ff6b6b', warning: '#fb923c', info: '#3b82f6' };
+    const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    notification.style.backgroundColor = colors[type] || colors.info;
+    notification.innerHTML = `<i class="fas ${icons[type] || icons.info}" style="font-size:1.2em"></i><span>${escapeHtml(message)}</span>`;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.4s cubic-bezier(0.4,0,0.2,1) forwards';
+        setTimeout(() => notification.remove(), 400);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = '@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}';
+document.head.appendChild(style);
+</script>
+{% endblock %}

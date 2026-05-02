@@ -1,0 +1,487 @@
+{% extends "base_teacher.html" %}
+
+{% block title %}Create New Assessment - Testify Examination System{% endblock %}
+{% block page_title %}Create New Assessment{% endblock %}
+{% block breadcrumb_item %}Create Exam{% endblock %}
+
+{% block extra_css %}
+<style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SheetJS Library para makabasa ng Excel files sa Frontend -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-size: 1.875rem; font-weight: 700; color: var(--text-dark);">Create New Assessment</h2>
+            <p style="color: var(--text-muted); margin-top: 0.25rem;">Set up your exam details and questions.</p>
+        </div>
+    </div>
+
+    <form id="examForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- 1. EXAM DETAILS CARD -->
+        <div class="card">
+            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">1. Exam Details</h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
+                <div style="grid-column: span 2;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Exam Title</label>
+                    <input type="text" id="exam_title" style="width: 100%; border: 1px solid var(--border-color); padding: 0.625rem; border-radius: var(--radius-md); outline: none; transition: var(--transition);" placeholder="e.g., Midterm Examination in Programming 2" required>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Course Code</label>
+                    <input type="text" style="width: 100%; border: 1px solid var(--border-color); padding: 0.625rem; border-radius: var(--radius-md); outline: none; background-color: #f0f0f0; color: var(--text-dark);" value="{{ course_code }} - {{ subject_name }}" readonly>
+                    <input type="hidden" id="assignment_id" value="{{ assignment_id }}">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Assessment Type</label>
+                    <select id="exam_type" style="width: 100%; border: 1px solid var(--border-color); padding: 0.625rem; border-radius: var(--radius-md); outline: none; transition: var(--transition);">
+                        <option value="Exam">Exam</option>
+                        <option value="Quiz">Quiz</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Duration (Minutes)</label>
+                    <input type="number" id="duration_minutes" style="width: 100%; border: 1px solid var(--border-color); padding: 0.625rem; border-radius: var(--radius-md); outline: none; transition: var(--transition);" placeholder="60" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Start Time</label>
+                        <input type="datetime-local" id="start_datetime" style="width: 100%; border: 1px solid var(--border-color); padding: 0.625rem; border-radius: var(--radius-md); font-size: 0.875rem; outline: none; transition: var(--transition);" required>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">End Time</label>
+                        <input type="datetime-local" id="end_datetime" style="width: 100%; border: 1px solid var(--border-color); padding: 0.625rem; border-radius: var(--radius-md); font-size: 0.875rem; outline: none; transition: var(--transition);" required>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; font-style: italic;">*Note: Security settings (Fullscreen, Disable Copy-Paste, Shuffling) are permanently enabled for this assessment by default.</p>
+        </div>
+
+        <!-- 2. QUESTION BUILDER & EXCEL IMPORT -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--primary);">2. Questions Builder</h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button type="button" onclick="document.getElementById('formatModal').style.display='flex'" style="font-size: 0.75rem; color: var(--primary); text-decoration: underline; background: none; border: none; cursor: pointer;">View Excel Format</button>
+                    
+                    <input type="file" id="excel_file" accept=".xlsx, .xls" style="display: none;">
+                    <button type="button" onclick="document.getElementById('excel_file').click()" style="background: #10b981; color: white; font-size: 0.875rem; font-weight: 600; padding: 0.375rem 1rem; border-radius: var(--radius-md); border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: var(--transition);">
+                        <i class="fas fa-file-excel"></i> Import from Excel
+                    </button>
+                    
+                    <span style="background: var(--primary-light); color: var(--primary); font-size: 0.75rem; font-weight: 600; padding: 0.375rem 0.75rem; border-radius: var(--radius-full);" id="totalPointsBadge">Total Points: 0</span>
+                </div>
+            </div>
+            
+            <div id="questionsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: center; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 1rem; cursor: pointer; transition: var(--transition);" onclick="addQuestion()">
+                <button type="button" style="color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer;">
+                    <span style="font-size: 1.25rem;">+</span> Add Question Manually
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- STICKY BOTTOM ACTION BAR -->
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid var(--border-color); padding: 1rem; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); z-index: 40;">
+    <div style="max-width: 80rem; margin: 0 auto; display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" onclick="previewData('Draft')" style="padding: 0.625rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-dark); background: var(--bg-body); border: 1px solid var(--border-color); cursor: pointer; transition: var(--transition);">Save as Draft</button>
+        <button type="button" onclick="previewData('Published')" style="padding: 0.625rem 2rem; border-radius: var(--radius-md); font-weight: 600; color: white; background: var(--primary); border: none; cursor: pointer; transition: var(--transition);">Publish Exam</button>
+    </div>
+</div>
+
+<!-- MODAL: EXCEL FORMAT GUIDE -->
+<div id="formatModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 60;">
+    <div style="background: white; padding: 1.5rem; border-radius: var(--radius-lg); width: 91.666667%; max-width: 42rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Excel Import Format</h3>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Make sure your Excel file has the following column headers exactly as shown (Row 1).</p>
+        
+        <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            <table style="width: 100%; font-size: 0.875rem; text-align: left; border-collapse: collapse;">
+                <thead style="background: var(--bg-body); color: var(--text-dark);">
+                    <tr>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Question</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Type</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Points</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">CorrectAnswer</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Option1</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Option2</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Option3</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--border-color);">Option4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color);">What is HTML?</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); color: var(--text-muted);">MCQ</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); color: var(--text-muted);">1</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); font-weight: 700; color: #10b981;">Markup Lang</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color);">Programming Lang</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color);">Markup Lang</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color);">Database</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color);">OS</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color);">Java is an OS.</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); color: var(--text-muted);">TrueFalse</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); color: var(--text-muted);">1</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); font-weight: 700; color: #10b981;">False</td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); background: var(--bg-body);"></td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); background: var(--bg-body);"></td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); background: var(--bg-body);"></td>
+                        <td style="padding: 0.5rem; border: 1px solid var(--border-color); background: var(--bg-body);"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem;">* Types must be exactly <b>MCQ</b> or <b>TrueFalse</b>. Leave Options 1-4 blank for TrueFalse.</p>
+
+        <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+            <button onclick="document.getElementById('formatModal').style.display='none'" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-md); font-weight: 600; border: none; cursor: pointer;">Got it</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CONFIRMATION -->
+<div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 60;">
+    <div style="background: white; padding: 2rem; border-radius: var(--radius-lg); width: 91.666667%; max-width: 28rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">Confirm Assessment</h3>
+        <pre id="overviewText" style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem; color: var(--text-dark); font-family: 'Courier New', monospace; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 1.5rem; border: 1px solid var(--border-color);"></pre>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button onclick="document.getElementById('confirmModal').style.display='none'" style="background: var(--bg-body); color: var(--text-dark); border: 1px solid var(--border-color); padding: 0.625rem 1.25rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: var(--transition);">Cancel</button>
+            <button id="confirmBtn" onclick="submitExam()" style="background: var(--primary); color: white; padding: 0.625rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; border: none; cursor: pointer; transition: var(--transition);">Confirm & Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questionCounter = 0;
+
+    window.onload = () => {
+        addQuestion();
+    };
+
+    document.getElementById('excel_file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            const excelRows = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+            
+            if(excelRows.length > 0) {
+                document.getElementById('questionsContainer').innerHTML = "";
+                questionCounter = 0;
+                
+                excelRows.forEach(row => {
+                    addQuestion(row);
+                });
+                
+                alert(`Successfully imported ${excelRows.length} questions!`);
+            } else {
+                alert("Excel file is empty or format is wrong.");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        e.target.value = ""; 
+    });
+
+    function addQuestion(excelData = null) {
+        questionCounter++;
+        const qId = questionCounter;
+
+        const qHTML = `
+            <div class="question-card" style="position: relative; background: var(--bg-body); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); transition: var(--transition);" id="q_block_${qId}">
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                    <h4 style="font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="background: var(--primary); color: white; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-full); font-size: 0.75rem;">${qId}</span>
+                    </h4>
+                    <button type="button" onclick="removeQuestion(${qId})" style="color: #ef4444; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; background: none; border: none; cursor: pointer; transition: var(--transition);">
+                        <span>&times;</span> Remove
+                    </button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <textarea class="q-text" style="width: 100%; border: 1px solid var(--border-color); padding: 0.75rem; border-radius: var(--radius-md); outline: none; resize: none;" rows="2" placeholder="Type your question here..." required></textarea>
+                    
+                    <div style="display: flex; gap: 1rem; align-items: center; background: white; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); width: fit-content;">
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-left: 0.25rem;">Type</label>
+                            <select class="q-type" style="border: none; background: transparent; outline: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; color: var(--text-dark);" onchange="handleQuestionTypeChange(${qId}, this.value)">
+                                <option value="MCQ">Multiple Choice</option>
+                                <option value="TrueFalse">True / False</option>
+                            </select>
+                        </div>
+                        <div style="width: 1px; height: 2rem; background: var(--border-color);"></div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-left: 0.25rem;">Points</label>
+                            <input type="number" class="q-points" style="border: none; background: transparent; outline: none; font-size: 0.875rem; font-weight: 600; width: 4rem; text-align: center;" value="1" min="1" onchange="updateTotalPoints()">
+                        </div>
+                    </div>
+
+                    <div class="choices-container" style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 0.5rem;" id="choices_container_${qId}"></div>
+
+                    <button type="button" onclick="addChoice(${qId})" id="add_choice_btn_${qId}" style="font-size: 0.875rem; font-weight: 600; color: var(--primary); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.25rem; background: none; border: none; cursor: pointer; transition: var(--transition);">
+                        <span>+</span> Add Option
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', qHTML);
+        
+        const qBlock = document.getElementById(`q_block_${qId}`);
+
+        if(excelData) {
+            qBlock.querySelector('.q-text').value = excelData.Question || "";
+            qBlock.querySelector('.q-type').value = excelData.Type || "MCQ";
+            qBlock.querySelector('.q-points').value = excelData.Points || 1;
+            
+            handleQuestionTypeChange(qId, excelData.Type || "MCQ", true);
+            
+            const correctAns = String(excelData.CorrectAnswer || "").trim();
+
+            if(excelData.Type === "TrueFalse") {
+                addChoice(qId, "True", correctAns === "True");
+                addChoice(qId, "False", correctAns === "False");
+            } else {
+                const options = [excelData.Option1, excelData.Option2, excelData.Option3, excelData.Option4];
+                options.forEach(opt => {
+                    if(opt !== undefined && opt !== "") {
+                        addChoice(qId, opt, String(opt).trim() === correctAns);
+                    }
+                });
+            }
+        } else {
+            addChoice(qId, "Option 1");
+            addChoice(qId, "Option 2");
+            addChoice(qId, "Option 3");
+            addChoice(qId, "Option 4");
+        }
+
+        updateTotalPoints();
+    }
+
+    function removeQuestion(qId) {
+        document.getElementById(`q_block_${qId}`).remove();
+        updateTotalPoints();
+    }
+
+    function addChoice(qId, defaultText = "", isCorrect = false) {
+        const container = document.getElementById(`choices_container_${qId}`);
+        const checkedAttr = isCorrect ? "checked" : "";
+        
+        const cHTML = `
+            <div class="choice-row" style="display: flex; align-items: center; gap: 0.75rem; background: white; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <input type="radio" name="correct_ans_${qId}" class="is-correct" style="width: 1.25rem; height: 1.25rem; cursor: pointer;" title="Mark as correct" ${checkedAttr}>
+                <input type="text" class="choice-text" style="flex: 1; border: none; outline: none; font-size: 0.875rem; background: transparent;" placeholder="Type option here..." value="${defaultText}" required>
+                <button type="button" onclick="this.parentElement.remove()" style="color: var(--text-muted); padding: 0 0.5rem; font-size: 1.125rem; font-weight: 700; background: none; border: none; cursor: pointer;" title="Remove Option">&times;</button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cHTML);
+    }
+
+    function handleQuestionTypeChange(qId, type, fromExcel = false) {
+        const container = document.getElementById(`choices_container_${qId}`);
+        const addBtn = document.getElementById(`add_choice_btn_${qId}`);
+        
+        if(!fromExcel) {
+            container.innerHTML = "";
+            if (type === 'TrueFalse') {
+                addChoice(qId, "True");
+                addChoice(qId, "False");
+                addBtn.style.display = "none";
+            } else {
+                addChoice(qId, "Option 1");
+                addChoice(qId, "Option 2");
+                addChoice(qId, "Option 3");
+                addChoice(qId, "Option 4");
+                addBtn.style.display = "flex";
+            }
+        } else {
+            addBtn.style.display = type === 'TrueFalse' ? "none" : "flex";
+        }
+    }
+
+    function updateTotalPoints() {
+        let total = 0;
+        document.querySelectorAll('.q-points').forEach(input => {
+            total += parseInt(input.value) || 0;
+        });
+        document.getElementById('totalPointsBadge').innerText = `Total Points: ${total}`;
+    }
+
+    function previewData(status) {
+        const title = document.getElementById('exam_title').value;
+        if(!title) {
+            alert("Please enter an Exam Title.");
+            return;
+        }
+
+        const examData = {
+            assignment_id: parseInt(document.getElementById('assignment_id').value),
+            exam_title: title,
+            exam_type: document.getElementById('exam_type').value,
+            duration_minutes: parseInt(document.getElementById('duration_minutes').value),
+            start_datetime: document.getElementById('start_datetime').value,
+            end_datetime: document.getElementById('end_datetime').value,
+            
+            shuffle_questions: true,
+            shuffle_answers: true,
+            fullscreen_required: true,
+            copy_paste_disabled: true,
+            
+            status: status,
+            questions: []
+        };
+
+        // Validate that required fields are filled
+        if (!examData.start_datetime || !examData.end_datetime) {
+            alert("Please set both start and end times.");
+            return;
+        }
+
+        try {
+            document.querySelectorAll('.question-card').forEach((qNode, index) => {
+                const questionText = qNode.querySelector('.q-text').value.trim();
+                
+                if (!questionText) {
+                    throw new Error(`Question ${index + 1} is empty. Please fill in the question text.`);
+                }
+
+                let question = {
+                    question_text: questionText,
+                    question_type: qNode.querySelector('.q-type').value,
+                    points: parseInt(qNode.querySelector('.q-points').value) || 1,
+                    choices: []
+                };
+
+                const choiceNodes = qNode.querySelectorAll('.choice-row');
+                if (choiceNodes.length === 0) {
+                    throw new Error(`Question ${index + 1} has no choices. Please add at least one choice.`);
+                }
+
+                let hasCorrectAnswer = false;
+                choiceNodes.forEach((cNode, choiceIndex) => {
+                    const choiceText = cNode.querySelector('.choice-text').value.trim();
+                    
+                    if (!choiceText) {
+                        throw new Error(`Question ${index + 1}, Choice ${choiceIndex + 1} is empty.`);
+                    }
+
+                    const isCorrect = cNode.querySelector('.is-correct').checked;
+                    if (isCorrect) hasCorrectAnswer = true;
+
+                    question.choices.push({
+                        choice_text: choiceText,
+                        is_correct: isCorrect
+                    });
+                });
+
+                if (!hasCorrectAnswer) {
+                    throw new Error(`Question ${index + 1} must have at least one correct answer marked.`);
+                }
+
+                examData.questions.push(question);
+            });
+
+            if (examData.questions.length === 0) {
+                alert("Please add at least one question.");
+                return;
+            }
+
+            // Show simple confirmation modal with overview
+            let totalPoints = 0;
+            examData.questions.forEach(q => {
+                totalPoints += q.points;
+            });
+
+            const overviewText = `
+Assessment Overview:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Title: ${examData.exam_title}
+Type: ${examData.exam_type}
+Duration: ${examData.duration_minutes} minutes
+Total Questions: ${examData.questions.length}
+Total Points: ${totalPoints}
+Status: ${status}
+Start: ${new Date(examData.start_datetime).toLocaleString()}
+End: ${new Date(examData.end_datetime).toLocaleString()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Security: Fullscreen + Copy Paste Disabled + Shuffled
+            `.trim();
+
+            document.getElementById('overviewText').textContent = overviewText;
+            document.getElementById('confirmModal').style.display = 'flex';
+
+            // Store data for submission
+            window.pendingExamData = examData;
+
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function submitExam() {
+        const confirmBtn = document.getElementById('confirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = 'Saving...';
+
+        fetch('/save_exam', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(window.pendingExamData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('✓ Assessment saved successfully!\nExam ID: ' + data.exam_id);
+                document.getElementById('confirmModal').style.display = 'none';
+                // Redirect to exams page
+                window.location.href = '/exams';
+            } else {
+                throw new Error(data.message || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('✗ Failed to save: ' + error.message);
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = 'Confirm & Save';
+        });
+    }
+</script>
+{% endblock %} 

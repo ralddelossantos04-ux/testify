@@ -1,0 +1,486 @@
+{% extends 'base_student.html' %}
+
+{% block title %}Subject Dashboard - Testify{% endblock %}
+
+{% block page_title %}Subject Dashboard{% endblock %}
+
+{% block breadcrumb_item %}Subject Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================
+   VARIABLES & GLOBAL RESET
+   ========================================= */
+.subject-dashboard {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --success: #10b981;
+    --success-light: #ecfdf5;
+    --warning: #f59e0b;
+    --warning-light: #fffbeb;
+    --danger: #ef4444;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    --radius: 12px;
+}
+
+/* =========================================
+   LAYOUT
+   ========================================= */
+.subject-dashboard .container {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 30px;
+    width: 100%;
+}
+
+/* =========================================
+   CARDS COMMON
+   ========================================= */
+.subject-dashboard .card-panel {
+    background: var(--bg-card);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+}
+
+/* =========================================
+   SUBJECT HEADER
+   ========================================= */
+.subject-dashboard .subject-card {
+    border-left: 6px solid var(--primary);
+}
+
+.subject-dashboard .subject-code {
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.subject-dashboard .subject-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 8px 0;
+    color: var(--text-main);
+}
+
+.subject-dashboard .subject-instructor {
+    font-size: 14px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* =========================================
+   PERFORMANCE STATS
+   ========================================= */
+.subject-dashboard .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-main);
+}
+
+.subject-dashboard .performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.subject-dashboard .stat-box {
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.subject-dashboard .stat-box.avg { background: var(--primary-light); border: 1px solid #bfdbfe; }
+.subject-dashboard .stat-box.avg .stat-num { color: var(--primary); }
+
+.subject-dashboard .stat-box.completed { background: var(--success-light); border: 1px solid #a7f3d0; }
+.subject-dashboard .stat-box.completed .stat-num { color: var(--success); }
+
+.subject-dashboard .stat-box.pending { background: var(--warning-light); border: 1px solid #fde68a; }
+.subject-dashboard .stat-box.pending .stat-num { color: var(--warning); }
+
+.subject-dashboard .stat-num {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.subject-dashboard .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================
+   TABS NAVIGATION
+   ========================================= */
+.subject-dashboard .tabs {
+    display: flex;
+    gap: 30px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 24px;
+}
+
+.subject-dashboard .tab {
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding-bottom: 12px;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.subject-dashboard .tab:hover { color: var(--primary); }
+
+.subject-dashboard .tab.active {
+    color: var(--primary);
+}
+
+.subject-dashboard .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+}
+
+/* =========================================
+   DYNAMIC CARDS (EXAMS/QUIZZES)
+   ========================================= */
+.subject-dashboard .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.subject-dashboard .item-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.subject-dashboard .item-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: #cbd5e1;
+}
+
+.subject-dashboard .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.subject-dashboard .badge {
+    background: var(--bg-page);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.subject-dashboard .status {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.subject-dashboard .status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+}
+
+.subject-dashboard .item-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-main);
+}
+
+.subject-dashboard .score-area {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.subject-dashboard .score-num { font-size: 36px; font-weight: 800; color: var(--text-main); }
+.subject-dashboard .score-total { font-size: 16px; color: var(--text-muted); font-weight: 500; }
+.subject-dashboard .score-percent { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--primary); }
+
+/* Progress Bar */
+.subject-dashboard .progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-page);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.subject-dashboard .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+.subject-dashboard .item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    font-size: 13px;
+}
+
+.subject-dashboard .violation { color: var(--text-muted); font-weight: 500; }
+.subject-dashboard .violation.has-violation { color: var(--danger); font-weight: 600; }
+
+.subject-dashboard .action-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.subject-dashboard .item-card:hover .action-btn { color: var(--primary); }
+
+/* =========================================
+   RIGHT PANEL WIDGETS
+   ========================================= */
+.subject-dashboard .widget-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.subject-dashboard .widget-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.subject-dashboard .clock-time {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 8px 0;
+    letter-spacing: -1px;
+}
+
+.subject-dashboard .clock-date { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+.subject-dashboard .clock-day { font-size: 16px; color: var(--primary); font-weight: 700; text-transform: uppercase; }
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 992px) {
+    .subject-dashboard .container { grid-template-columns: 1fr; }
+    .subject-dashboard .widget-panel { flex-direction: row; }
+    .subject-dashboard .widget-card { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+}
+
+@media (max-width: 600px) {
+    .subject-dashboard .widget-panel { flex-direction: column; }
+    .subject-dashboard .items-grid { grid-template-columns: 1fr; }
+    .subject-dashboard .performance-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="subject-dashboard fade-in">
+    <div class="container">
+        <!-- MAIN CONTENT AREA -->
+        <div>
+            <!-- Subject Header -->
+            <div class="card-panel subject-card">
+                <div class="subject-code">Class Code: 452 - IT2201</div>
+                <div class="subject-title">Computer Programming 2</div>
+                <div class="subject-instructor">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Instructor: Gerald Delos Santos
+                </div>
+            </div>
+
+            <!-- Performance Stats -->
+            <div class="card-panel">
+                <div class="section-title">My Performance</div>
+                <div class="performance-grid">
+                    <div class="stat-box avg">
+                        <div class="stat-num">79%</div>
+                        <div class="stat-label">Average Score</div>
+                    </div>
+                    <div class="stat-box completed">
+                        <div class="stat-num">5</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-box pending">
+                        <div class="stat-num">2</div>
+                        <div class="stat-label">Pending Tasks</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Content Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('exams', event)">Exams</div>
+                <div class="tab" onclick="showTab('quizzes', event)">Quizzes</div>
+            </div>
+
+            <!-- Grid Container for JS Injection -->
+            <div id="cards-container" class="items-grid"></div>
+
+        </div>
+
+        <!-- SIDEBAR/WIDGET AREA -->
+        <div class="widget-panel">
+            <!-- Date/Time Widget -->
+            <div class="widget-card">
+                <div class="clock-day" id="day"></div>
+                <div class="clock-time" id="clock">--:--:--</div>
+                <div class="clock-date" id="date"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mock Data
+const exams = [
+    { title: "Prelim Exam", score: 65, total: 85, percent: 76, violations: 0 },
+    { title: "Midterm Exam", score: 70, total: 90, percent: 77, violations: 1 },
+    { title: "Final Exam", score: 80, total: 100, percent: 80, violations: 0 }
+];
+
+const quizzes = [
+    { title: "Quiz 1: Variables", score: 18, total: 20, percent: 90, violations: 0 },
+    { title: "Quiz 2: Loops", score: 17, total: 20, percent: 85, violations: 0 },
+    { title: "Quiz 3: Functions", score: 19, total: 20, percent: 95, violations: 0 },
+    { title: "Quiz 4: Arrays", score: 15, total: 20, percent: 75, violations: 2 }
+];
+
+function showTab(type, event) {
+    // Handle Active Tab Styling
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    event.target.classList.add("active");
+
+    // Get correct data
+    let data = type === "exams" ? exams : quizzes;
+    let container = document.getElementById("cards-container");
+    let html = "";
+
+    // Generate HTML for each card
+    data.forEach(item => {
+        // Color coding for progress bar
+        let progressColor = item.percent >= 80 ? 'var(--success)' : (item.percent >= 75 ? 'var(--warning)' : 'var(--danger)');
+        let violationClass = item.violations > 0 ? 'has-violation' : '';
+        let violationText = item.violations > 0 ? `⚠️ Violations: ${item.violations}` : `✅ No Violations`;
+
+        html += `
+        <div class="item-card">
+            <div class="item-header">
+                <span class="badge">${type === "exams" ? "Exam" : "Quiz"}</span>
+                <span class="status">Completed</span>
+            </div>
+            
+            <div class="item-title">${item.title}</div>
+            
+            <div class="score-area">
+                <span class="score-num">${item.score}</span>
+                <span class="score-total">/${item.total}</span>
+                <span class="score-percent">${item.percent}%</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-track">
+                <div class="progress-fill" style="width: ${item.percent}%; background: ${progressColor};"></div>
+            </div>
+
+            <div class="item-footer">
+                <span class="violation ${violationClass}">${violationText}</span>
+                <button class="action-btn">→</button>
+            </div>
+        </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// Initialize default tab
+showTab("exams", { target: document.querySelector(".tab") });
+
+// Clock Functionality
+function updateClock() {
+    let now = new Date();
+    
+    // Format Time (10:45:30 AM)
+    document.getElementById("clock").innerText = now.toLocaleTimeString('en-US', {
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    // Format Date (October 24, 2023)
+    document.getElementById("date").innerText = now.toLocaleDateString('en-US', {
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric'
+    });
+    
+    // Format Day (Wednesday)
+    document.getElementById("day").innerText = now.toLocaleDateString('en-US', {
+        weekday: 'long'
+    });
+}
+
+setInterval(updateClock, 1000);
+updateClock(); // Call immediately to prevent 1s delay
+</script>
+{% endblock %}

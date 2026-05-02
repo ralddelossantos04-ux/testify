@@ -1,0 +1,322 @@
+{% extends "base_teacher.html" %}
+
+{% block title %}{{ class_info.subject_code }} - {{ class_info.block_name }} - Testify Examination System{% endblock %}
+{% block page_title %}{{ class_info.subject_name }} - {{ class_info.block_name }}{% endblock %}
+{% block breadcrumb_item %}{{ class_info.course_code }} - {{ class_info.subject_code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tab-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    .tab-btn {
+        padding: 0.75rem 1.5rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text-muted);
+        transition: var(--transition);
+        font-size: 0.925rem;
+    }
+    .tab-btn:hover {
+        color: var(--primary);
+    }
+    .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Class Header Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">{{ class_info.subject_name }}</h2>
+                <div style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                    <strong>Subject Code:</strong> {{ class_info.subject_code }} | 
+                    <strong>Course Code:</strong> {{ class_info.course_code }}
+                </div>
+                <div style="color: var(--text-muted);">
+                    <strong>Program:</strong> {{ class_info.program_name }} | 
+                    <strong>Department:</strong> {{ class_info.department_name }} |
+                    <strong>Year Level:</strong> {{ class_info.year_level }} |
+                    <strong>Section:</strong> {{ class_info.section }}
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ url_for('teacher.create_exam', assignment_id=class_info.assignment_id) }}" style="padding: 0.625rem 1.25rem; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 500; transition: var(--transition); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-plus"></i> Create Exam
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="main">Main</button>
+        <button class="tab-btn" data-tab="logs">View Logs</button>
+        <button class="tab-btn" data-tab="students">View Students</button>
+    </div>
+
+    <!-- Tab Contents -->
+    <div id="main" class="tab-content active">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            <!-- Main Content -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <div class="card" style="text-align: center; padding: 1.25rem;">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">{{ students|length if students else 0 }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">Total Students</div>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 1.25rem;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #10b981;">{{ exams|length if exams else 0 }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">Total Exams</div>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 1.25rem;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #f59e0b;">{{ exams|selectattr('status', 'equalto', 'published')|list|length if exams else 0 }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">Published</div>
+                    </div>
+                </div>
+
+                <!-- Recent Exams -->
+                <div class="card">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Exams & Assessments</h3>
+                    {% if exams %}
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            {% for exam in exams %}
+                                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                        <div>
+                                            <div style="font-weight: 600; margin-bottom: 0.25rem;">{{ exam.exam_title }}</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-muted);">
+                                                <span style="background: var(--primary-light); color: var(--primary); padding: 0.125rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 500;">{{ exam.exam_type }}</span>
+                                                <span style="margin-left: 0.5rem;">{{ exam.total_questions }} questions</span>
+                                                <span style="margin-left: 0.5rem;">{{ exam.duration_minutes }} mins</span>
+                                            </div>
+                                        </div>
+                                        <span style="padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; {% if exam.status == 'published' %}background: #d1fae5; color: #10b981;{% else %}background: #fef3c7; color: #f59e0b;{% endif %}">{{ exam.status|capitalize }}</span>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                        <div><strong>Start:</strong> {{ exam.start_datetime.strftime('%b %d, %Y %I:%M %p') if exam.start_datetime else 'Not set' }}</div>
+                                        <div><strong>End:</strong> {{ exam.end_datetime.strftime('%b %d, %Y %I:%M %p') if exam.end_datetime else 'Not set' }}</div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                                        {% if exam.shuffle_questions %}<span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-random"></i> Shuffle Questions</span>{% endif %}
+                                        {% if exam.shuffle_answers %}<span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-random"></i> Shuffle Answers</span>{% endif %}
+                                        {% if exam.fullscreen_required %}<span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-expand"></i> Fullscreen</span>{% endif %}
+                                        {% if exam.copy_paste_disabled %}<span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-cut"></i> No Copy-Paste</span>{% endif %}
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="toggleExamDetails({{ exam.exam_id }})" style="padding: 0.375rem 0.75rem; background: var(--primary-light); color: var(--primary); border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">View Details</button>
+                                        <button style="padding: 0.375rem 0.75rem; background: var(--bg-body); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">Edit</button>
+                                    </div>
+                                    
+                                    <!-- Hidden Exam Details -->
+                                    <div id="exam-details-{{ exam.exam_id }}" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                                        <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-dark);">Questions</h4>
+                                        {% if exam.questions %}
+                                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                                {% for question in exam.questions %}
+                                                    <div style="padding: 0.75rem; background: var(--bg-body); border-radius: var(--radius-md);">
+                                                        <div style="font-weight: 500; margin-bottom: 0.5rem;">Q{{ loop.index }}: {{ question.question_text }}</div>
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                                            <span style="background: var(--primary-light); color: var(--primary); padding: 0.125rem 0.375rem; border-radius: var(--radius-sm);">{{ question.question_type }}</span>
+                                                            <span style="margin-left: 0.5rem;">{{ question.points }} pts</span>
+                                                        </div>
+                                                        {% if question.choices %}
+                                                            <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-left: 0.5rem;">
+                                                                {% for choice in question.choices %}
+                                                                    <div style="font-size: 0.875rem; color: var(--text-muted); {% if choice.is_correct %}color: #10b981; font-weight: 500;{% endif %}">
+                                                                        {% if choice.is_correct %}<i class="fas fa-check-circle"></i>{% else %}<i class="far fa-circle"></i>{% endif %}
+                                                                        {{ choice.choice_text }}
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <div style="font-size: 0.875rem; color: var(--text-muted);">No questions found</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                            <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <div>No exams created yet</div>
+                            <a href="{{ url_for('teacher.create_exam', assignment_id=class_info.assignment_id) }}" style="color: var(--primary); text-decoration: none; font-weight: 500;">Create your first exam</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Class Info -->
+                <div class="card">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Class Information</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Block:</span>
+                            <span style="font-weight: 500;">{{ class_info.block_name }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Year Level:</span>
+                            <span style="font-weight: 500;">{{ class_info.year_level }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Section:</span>
+                            <span style="font-weight: 500;">{{ class_info.section }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Status:</span>
+                            <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #10b981; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">{{ class_info.status|capitalize }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Quick Actions</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="{{ url_for('teacher.create_exam', assignment_id=class_info.assignment_id) }}" style="padding: 0.75rem; background: var(--primary-light); color: var(--primary); border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 500; text-align: left; transition: var(--transition); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-file-alt"></i> Create New Exam
+                        </a>
+                        <button style="padding: 0.75rem; background: var(--bg-body); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; font-weight: 500; text-align: left; transition: var(--transition);">
+                            <i class="fas fa-chart-bar"></i> View Results
+                        </button>
+                        <button style="padding: 0.75rem; background: var(--bg-body); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; font-weight: 500; text-align: left; transition: var(--transition);">
+                            <i class="fas fa-upload"></i> Upload Materials
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="logs" class="tab-content">
+        <div class="card">
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Activity Logs</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-light); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-file-alt" style="color: var(--primary);"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500;">Exam created</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Midterm Examination</div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">2 hours ago</div>
+                </div>
+                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; background: #d1fae5; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-check" style="color: #10b981;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500;">Quiz graded</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Quiz 1 - Chapter 1</div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">5 hours ago</div>
+                </div>
+                <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; background: #fef3c7; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user-plus" style="color: #f59e0b;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500;">Student enrolled</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">New student added to class</div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">1 day ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="students" class="tab-content">
+        <div class="card">
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Students List</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color);">
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); font-size: 0.875rem;">Student ID</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); font-size: 0.875rem;">Student Name</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); font-size: 0.875rem;">Status</th>
+                        <th style="text-align: center; padding: 0.75rem; font-weight: 600; color: var(--text-muted); font-size: 0.875rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if students %}
+                        {% for student in students %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 0.75rem;">{{ student.student_id }}</td>
+                            <td style="padding: 0.75rem;">{{ student.first_name }} {{ student.last_name }}</td>
+                            <td style="padding: 0.75rem;">
+                                {% if student.status == 'active' %}
+                                    <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #10b981; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Active</span>
+                                {% else %}
+                                    <span style="padding: 0.25rem 0.75rem; background: #fee2e2; color: #ef4444; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">{{ student.status|capitalize }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center;">
+                                <button style="padding: 0.375rem 0.75rem; background: var(--primary-light); color: var(--primary); border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">View Details</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No students found in this class</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleExamDetails(examId) {
+        const detailsDiv = document.getElementById('exam-details-' + examId);
+        if (detailsDiv.style.display === 'none') {
+            detailsDiv.style.display = 'block';
+        } else {
+            detailsDiv.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

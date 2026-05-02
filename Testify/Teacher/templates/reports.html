@@ -1,0 +1,170 @@
+{% extends "base_teacher.html" %}
+
+{% block title %}Reports - Testify Examination System{% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block breadcrumb_item %}Reports{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Report Categories -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card" style="cursor: pointer; transition: var(--transition);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-bar" style="font-size: 1.25rem; color: var(--primary);"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600;">Performance Report</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Student performance analysis</p>
+                </div>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">View detailed performance metrics and trends for your students.</p>
+            <button style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-size: 0.875rem; cursor: pointer;">
+                Generate Report
+            </button>
+        </div>
+
+        <div class="card" style="cursor: pointer; transition: var(--transition);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 48px; height: 48px; background: #d1fae5; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-clipboard-check" style="font-size: 1.25rem; color: #10b981;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600;">Attendance Report</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Class attendance tracking</p>
+                </div>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Monitor student attendance patterns across all classes.</p>
+            <button style="padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: var(--radius-md); font-size: 0.875rem; cursor: pointer;">
+                Generate Report
+            </button>
+        </div>
+
+        <div class="card" style="cursor: pointer; transition: var(--transition);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 48px; height: 48px; background: #fef3c7; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-tasks" style="font-size: 1.25rem; color: #f59e0b;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600;">Assessment Summary</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Exam and quiz overview</p>
+                </div>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Summary of all assessments including completion rates and scores.</p>
+            <button style="padding: 0.5rem 1rem; background: #f59e0b; color: white; border: none; border-radius: var(--radius-md); font-size: 0.875rem; cursor: pointer;">
+                Generate Report
+            </button>
+        </div>
+
+        <div class="card" style="cursor: pointer; transition: var(--transition);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 48px; height: 48px; background: #fee2e2; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-users" style="font-size: 1.25rem; color: #ef4444;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600;">Class Analytics</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Class-wide statistics</p>
+                </div>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Comprehensive analytics for each class you teach.</p>
+            <button style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: var(--radius-md); font-size: 0.875rem; cursor: pointer;">
+                Generate Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="card">
+        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">Recent Reports</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Report Name</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Type</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Date Generated</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Status</th>
+                    <th style="text-align: right; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Class 10A Performance Report</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">January 2026</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Performance</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Jan 15, 2026</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Ready</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-download" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Class 9B Attendance Report</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">January 2026</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Attendance</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Jan 14, 2026</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Ready</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-download" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Assessment Summary Q4</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">All Classes</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Assessment</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Jan 10, 2026</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Ready</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-download" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Class 8A Analytics</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">January 2026</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Analytics</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Jan 8, 2026</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #fef3c7; color: #92400e; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Processing</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;" disabled>
+                            <i class="fas fa-download" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;" disabled>
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base_teacher.html" %}
+
+{% block title %}Quizzes - Testify Examination System{% endblock %}
+{% block page_title %}Quizzes{% endblock %}
+{% block breadcrumb_item %}Quizzes{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Header Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <input type="text" placeholder="Search quizzes..." style="padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem; width: 300px;">
+            <select style="padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.925rem;">
+                <option>All Classes</option>
+                <option>Class 10A</option>
+                <option>Class 9B</option>
+                <option>Class 8A</option>
+            </select>
+        </div>
+        <button style="padding: 0.65rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; transition: var(--transition);">
+            <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Create Quiz
+        </button>
+    </div>
+
+    <!-- Quizzes List -->
+    <div class="card">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Quiz Title</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Class</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Questions</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Duration</th>
+                    <th style="text-align: left; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Status</th>
+                    <th style="text-align: right; padding: 1rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted);">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Algebra Basics</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Linear equations</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Class 10A</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">20 questions</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">30 mins</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Active</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Cell Structure</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Biology fundamentals</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Class 9B</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">15 questions</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">25 mins</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #fef3c7; color: #92400e; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Scheduled</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Grammar Quiz</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Parts of speech</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Class 8A</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">25 questions</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">20 mins</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #e0e7ff; color: #3730a3; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Draft</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; font-size: 0.925rem;">Geography Quiz</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">World capitals</div>
+                    </td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">Class 10A</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">30 questions</td>
+                    <td style="padding: 1rem; font-size: 0.925rem;">35 mins</td>
+                    <td style="padding: 1rem;">
+                        <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;">Completed</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer; margin-right: 0.5rem;">
+                            <i class="fas fa-eye" style="color: var(--text-muted);"></i>
+                        </button>
+                        <button style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: white; border-radius: var(--radius-md); cursor: pointer;">
+                            <i class="fas fa-edit" style="color: var(--text-muted);"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

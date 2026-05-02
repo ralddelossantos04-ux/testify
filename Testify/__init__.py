@@ -1,5 +1,13 @@
 from flask import Flask
 
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': '',
+    'database': 'delossantos_db',
+    'auth_plugin': 'mysql_native_password'
+}
+
 def reg_app():
     app = Flask(__name__)
 
