@@ -1,244 +1,904 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Exam Reports</title>
+{% extends "base_admin.html" %}
+
+{% block title %}Reports - Admin Dashboard{% endblock %}
+{% block page_title %}Assessment Statistics{% endblock %}
+{% block breadcrumb_item %}Reports{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- FontAwesome for Professional Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Professional Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
+    /* =============================================
+       DESIGN TOKENS (Professional Enterprise Theme)
+    ============================================= */
+    :root {
+        --brand-primary:   #2563eb; /* Royal Blue */
+        --brand-light:     #eff6ff;
+        --brand-secondary: #0f766e; /* Deep Teal */
+        --brand-sec-light: #f0fdfa;
+        
+        --success:         #10b981;
+        --success-light:   #d1fae5;
+        --warning:         #f59e0b;
+        --warning-light:   #fef3c7;
+        --danger:          #ef4444;
 
-body{
-font-family: Arial, sans-serif;
-margin:0;
-background:#f5f6fa;
-}
+        --bg:              #f8fafc;
+        --surface:         #ffffff;
+        --surface-hover:   #f1f5f9;
+        
+        --border:          #e2e8f0;
+        --border-strong:   #cbd5e1;
 
-.container{
-padding:30px;
-}
+        --ink:             #0f172a;
+        --ink-2:           #334155;
+        --ink-muted:       #64748b;
+        --ink-faint:       #94a3b8;
 
-h1{
-margin-bottom:20px;
-}
+        --radius-sm:       4px;
+        --radius-md:       8px;
+        --radius-lg:       12px;
 
-/* FILTERS */
+        --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.05);
+        --shadow-md:       0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+        --shadow-lg:       0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
 
-.filters{
-display:grid;
-grid-template-columns: repeat(5,1fr);
-gap:15px;
-background:white;
-padding:20px;
-border-radius:8px;
-margin-bottom:20px;
-}
+        --font:            'Inter', sans-serif;
+        --mono:            'JetBrains Mono', monospace;
 
-.filters select{
-padding:8px;
-border:1px solid #ccc;
-border-radius:4px;
-}
+        --transition:      150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.generate{
-grid-column: span 5;
-padding:10px;
-background:#3b82f6;
-color:white;
-border:none;
-border-radius:4px;
-cursor:pointer;
-}
+    /* =============================================
+       BASE RESET
+    ============================================= */
+    .reports-container * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* SUMMARY CARDS */
+    .reports-container {
+        font-family: var(--font);
+        color: var(--ink);
+        background: var(--bg);
+        min-height: 100vh;
+        padding: 32px;
+        animation: fadeIn 0.4s ease both;
+    }
 
-.cards{
-display:grid;
-grid-template-columns: repeat(4,1fr);
-gap:20px;
-margin-bottom:20px;
-}
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
-.card{
-background:white;
-padding:20px;
-border-radius:8px;
-text-align:center;
-}
+    /* =============================================
+       PAGE HEADER
+    ============================================= */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
 
-.card h3{
-margin:0;
-font-size:14px;
-color:#555;
-}
+    .page-header-left h1 {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
 
-.card p{
-font-size:24px;
-font-weight:bold;
-margin-top:10px;
-}
+    .page-header-left p {
+        font-size: 14px;
+        color: var(--ink-muted);
+        margin-top: 6px;
+        font-weight: 400;
+    }
 
-/* CHART PLACEHOLDER */
+    .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 99px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-2);
+        box-shadow: var(--shadow-sm);
+    }
 
-.charts{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-margin-bottom:20px;
-}
+    .header-badge .dot {
+        width: 8px; height: 8px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+    }
 
-.chart{
-background:white;
-height:250px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:8px;
-color:#777;
-}
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%      { opacity: 0.5; transform: scale(0.85); }
+    }
 
-/* TABLE */
+    /* =============================================
+       FILTERS
+    ============================================= */
+    .filters-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+    }
 
-.table-container{
-background:white;
-padding:20px;
-border-radius:8px;
-}
+    .filters-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-muted);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-table{
-width:100%;
-border-collapse:collapse;
-}
+    .filters-label i {
+        color: var(--ink-faint);
+    }
 
-th, td{
-padding:10px;
-border-bottom:1px solid #eee;
-text-align:left;
-}
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 
-th{
-background:#f1f2f6;
-}
+    .filters select {
+        padding: 10px 36px 10px 14px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--ink-2);
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        transition: all var(--transition);
+        flex: 1;
+        min-width: 180px;
+    }
 
+    .filters select:hover {
+        border-color: var(--ink-faint);
+    }
+
+    .filters select:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    /* =============================================
+       KPI GRID
+    ============================================= */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        transition: transform var(--transition), box-shadow var(--transition);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .kpi-card:hover { 
+        transform: translateY(-2px); 
+        box-shadow: var(--shadow-md); 
+    }
+
+    .kpi-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .kpi-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-muted);
+    }
+
+    .kpi-icon {
+        width: 40px; height: 40px;
+        border-radius: var(--radius-md);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+    }
+
+    .kpi-icon.students  { background: var(--brand-light); color: var(--brand-primary); }
+    .kpi-icon.avg       { background: var(--brand-sec-light); color: var(--brand-secondary); }
+    .kpi-icon.highest   { background: var(--warning-light); color: var(--warning); }
+    .kpi-icon.passing   { background: var(--success-light); color: var(--success); }
+
+    .kpi-val {
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-family: var(--mono);
+    }
+
+    .kpi-sub {
+        font-size: 13px;
+        color: var(--ink-faint);
+        margin-top: 10px;
+        font-weight: 400;
+    }
+
+    /* =============================================
+       CHARTS GRID
+    ============================================= */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .chart-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        min-width: 0;
+    }
+
+    .chart-box-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .chart-box-header h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .chart-type-pill {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 280px;
+        width: 100%;
+    }
+
+    /* =============================================
+       TABLE
+    ============================================= */
+    .table-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .table-box-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .table-box-header h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .table-count {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    thead tr {
+        background: var(--surface-hover);
+    }
+
+    th {
+        padding: 14px 24px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+    }
+
+    td {
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border);
+        color: var(--ink-2);
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr {
+        transition: background var(--transition);
+    }
+
+    tbody tr:hover td { background: var(--surface-hover); }
+
+    .section-name {
+        font-weight: 500;
+        color: var(--ink);
+    }
+
+    .student-count {
+        font-family: var(--mono);
+        color: var(--ink-2);
+    }
+
+    .score-val {
+        font-weight: 600;
+        color: var(--ink);
+        font-family: var(--mono);
+    }
+
+    .pass-rate-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-2);
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .progress-bar-bg {
+        width: 100%;
+        min-width: 140px;
+        background: var(--border);
+        border-radius: 99px;
+        height: 8px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: var(--success);
+        border-radius: 99px;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 1024px) {
+        .charts-grid { grid-template-columns: 1fr; }
+        .chart-container { height: 260px; }
+    }
+
+    @media (max-width: 768px) {
+        .reports-container { padding: 20px 16px; }
+        .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 540px) {
+        .kpi-grid { grid-template-columns: 1fr; }
+        .filters select { min-width: 100%; }
+    }
 </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
+<div class="reports-container">
 
-<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1>Assessment Statistics</h1>
+            <p>Overall performance data and analytics for Quizzes and Exams</p>
+        </div>
+        <div class="header-badge">
+            <span class="dot"></span>
+            Live Data
+        </div>
+    </div>
 
-<h1>Exam Reports</h1>
+    <!-- Filters -->
+    <div class="filters-card">
+        <div class="filters-label">
+            <i class="fa-solid fa-filter"></i> Filter Results
+        </div>
+        <div class="filters">
+            <select id="programFilter">
+                <option value="">All Programs</option>
+                {% for program in programs %}
+                <option value="{{ program.program_id }}">{{ program.program_code }} - {{ program.program_name }}</option>
+                {% endfor %}
+            </select>
 
-<div class="filters">
+            <select id="specializationFilter">
+                <option value="">All Specializations</option>
+            </select>
 
-<select>
-<option>Program</option>
-<option>BSIT</option>
-<option>BSBA</option>
-</select>
+            <select id="yearLevelFilter">
+                <option value="">All Year Levels</option>
+            </select>
 
-<select>
-<option>Year Level</option>
-<option>2nd Year</option>
-</select>
+            <select id="sectionFilter">
+                <option value="">All Sections</option>
+            </select>
 
-<select>
-<option>Section</option>
-<option>A</option>
-</select>
+            <select id="subjectFilter">
+                <option value="">All Subjects</option>
+            </select>
 
-<select>
-<option>Subject</option>
-<option>Database</option>
-</select>
+            <select id="examFilter">
+                <option value="">All Exams</option>
+            </select>
+        </div>
+    </div>
 
-<select>
-<option>Exam Title</option>
-<option>Quiz 1</option>
-</select>
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Total Students</span>
+                <div class="kpi-icon students"><i class="fa-solid fa-user-group"></i></div>
+            </div>
+            <div class="kpi-val" id="totalStudents">{{ summary_stats.total_students }}</div>
+            <div class="kpi-sub">Students who attempted exams</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Average Score</span>
+                <div class="kpi-icon avg"><i class="fa-solid fa-chart-line"></i></div>
+            </div>
+            <div class="kpi-val" id="averageScore">{{ summary_stats.average_score }}%</div>
+            <div class="kpi-sub">Across all exam attempts</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Highest Score</span>
+                <div class="kpi-icon highest"><i class="fa-solid fa-award"></i></div>
+            </div>
+            <div class="kpi-val" id="highestScore">{{ summary_stats.highest_score }}%</div>
+            <div class="kpi-sub">Best performance recorded</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-title">Passing Rate</span>
+                <div class="kpi-icon passing"><i class="fa-solid fa-check-double"></i></div>
+            </div>
+            <div class="kpi-val" id="passingRate">{{ summary_stats.passing_rate }}%</div>
+            <div class="kpi-sub">Students scoring 60% or higher</div>
+        </div>
+    </div>
 
-<button class="generate">Generate Report</button>
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-box">
+            <div class="chart-box-header">
+                <h3>Assessment Volume</h3>
+                <span class="chart-type-pill"><i class="fa-solid fa-circle-notch"></i> Doughnut</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-box-header">
+                <h3>Average Scores by Subject</h3>
+                <span class="chart-type-pill"><i class="fa-solid fa-chart-simple"></i> Bar</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-box">
+        <div class="table-box-header">
+            <h3>Section Performance</h3>
+            <span class="table-count"><i class="fa-solid fa-layer-group"></i> All sections overview</span>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Students</th>
+                        <th>Average Score</th>
+                        <th>Pass Rate</th>
+                    </tr>
+                </thead>
+                <tbody id="sectionPerformanceBody">
+                    {% for section in section_performance %}
+                    <tr>
+                        <td><span class="section-name">{{ section.program_code }} {{ section.year_level }}{{ section.section }}</span></td>
+                        <td><span class="student-count">{{ section.student_count }}</span></td>
+                        <td><span class="score-val">{{ section.avg_score }}%</span></td>
+                        <td>
+                            <div class="pass-rate-label">
+                                <span>Passed</span>
+                                <span>{{ section.pass_rate }}%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: {{ section.pass_rate }}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- =============================================
+         JAVASCRIPT LOGIC (Maintained & Colors Updated)
+    ============================================= -->
+    <script>
+        let typeChartInstance = null;
+        let scoreChartInstance = null;
+
+        // Professional Chart Color Palette
+        const CHART_COLOR_PRIMARY = '#2563eb';   // Royal Blue (Quizzes)
+        const CHART_COLOR_SECONDARY = '#0f766e'; // Deep Teal (Exams)
+        const CHART_GRID_COLOR = '#e2e8f0';
+        const CHART_TEXT_COLOR = '#64748b';
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // CHART 1: Doughnut Chart
+            const ctxType = document.getElementById('typeChart').getContext('2d');
+            typeChartInstance = new Chart(ctxType, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Quizzes', 'Exams'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: [CHART_COLOR_PRIMARY, CHART_COLOR_SECONDARY],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                color: CHART_TEXT_COLOR,
+                                font: { family: 'Inter', size: 13, weight: '500' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // CHART 2: Bar Chart
+            const ctxScore = document.getElementById('scoreChart').getContext('2d');
+            scoreChartInstance = new Chart(ctxScore, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Avg Quiz Score (%)',
+                            data: [],
+                            backgroundColor: CHART_COLOR_PRIMARY,
+                            borderRadius: 4,
+                            borderSkipped: false,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Avg Exam Score (%)',
+                            data: [],
+                            backgroundColor: CHART_COLOR_SECONDARY,
+                            borderRadius: 4,
+                            borderSkipped: false,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 16,
+                                color: CHART_TEXT_COLOR,
+                                font: { family: 'Inter', size: 12, weight: '500' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: CHART_TEXT_COLOR, font: { family: 'Inter', size: 12 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            border: { display: false },
+                            grid: { color: CHART_GRID_COLOR, drawBorder: false },
+                            ticks: {
+                                color: CHART_TEXT_COLOR,
+                                font: { family: 'JetBrains Mono', size: 11 },
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Filter event listeners
+            const programFilter = document.getElementById('programFilter');
+            const specializationFilter = document.getElementById('specializationFilter');
+            const yearLevelFilter = document.getElementById('yearLevelFilter');
+            const sectionFilter = document.getElementById('sectionFilter');
+            const subjectFilter = document.getElementById('subjectFilter');
+
+            programFilter.addEventListener('change', function() {
+                const programId = this.value;
+                const yearLevel = yearLevelFilter.value;
+                if (programId) {
+                    fetch(`/admin/api/reports/specializations/${programId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            specializationFilter.innerHTML = '<option value="">All Specializations</option>';
+                            data.specializations.forEach(spec => {
+                                specializationFilter.innerHTML += `<option value="${spec.specialization_id}">${spec.specialization_code} - ${spec.specialization_name}</option>`;
+                            });
+                        });
+
+                    fetch(`/admin/api/reports/year-levels/${programId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            yearLevelFilter.innerHTML = '<option value="">All Year Levels</option>';
+                            data.year_levels.forEach(yl => {
+                                yearLevelFilter.innerHTML += `<option value="${yl.year_level}">${yl.year_level}</option>`;
+                            });
+                            loadSubjects(programId, yearLevel);
+                        });
+                } else {
+                    specializationFilter.innerHTML = '<option value="">All Specializations</option>';
+                    yearLevelFilter.innerHTML = '<option value="">All Year Levels</option>';
+                    subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+                }
+                generateReport();
+            });
+
+            yearLevelFilter.addEventListener('change', function() {
+                const programId = programFilter.value;
+                const yearLevel = this.value;
+                loadSections(programId, yearLevel);
+                if (programId) { loadSubjects(programId, yearLevel); }
+                generateReport();
+            });
+
+            specializationFilter.addEventListener('change', function() { generateReport(); });
+            sectionFilter.addEventListener('change', function() { generateReport(); });
+
+            subjectFilter.addEventListener('change', function() {
+                const subjectId = this.value;
+                let url = '/admin/api/reports/exams';
+                if (subjectId) { url += '?subject_id=' + subjectId; }
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        const examFilter = document.getElementById('examFilter');
+                        examFilter.innerHTML = '<option value="">All Exams</option>';
+                        data.exams.forEach(exam => {
+                            examFilter.innerHTML += `<option value="${exam.exam_id}">${exam.exam_title}</option>`;
+                        });
+                    });
+                generateReport();
+            });
+
+            document.getElementById('examFilter').addEventListener('change', function() { generateReport(); });
+
+            function loadSubjects(programId, yearLevel = '') {
+                let url = `/admin/api/reports/subjects/${programId}`;
+                if (yearLevel) { url += `?year_level=${yearLevel}`; }
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+                        data.subjects.forEach(sub => {
+                            subjectFilter.innerHTML += `<option value="${sub.subject_id}">${sub.subject_code} - ${sub.subject_name}</option>`;
+                        });
+                    });
+            }
+
+            function loadSections(programId, yearLevel) {
+                let url = '/admin/api/reports/sections';
+                const params = new URLSearchParams();
+                if (programId) params.append('program_id', programId);
+                if (yearLevel) params.append('year_level', yearLevel);
+                if (params.toString()) url += '?' + params.toString();
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        sectionFilter.innerHTML = '<option value="">All Sections</option>';
+                        data.sections.forEach(sec => {
+                            sectionFilter.innerHTML += `<option value="${sec.block_id}">${sec.block_name}</option>`;
+                        });
+                    });
+            }
+
+            loadChartData();
+        });
+
+        function loadChartData() {
+            const programId = document.getElementById('programFilter').value;
+            const specializationId = document.getElementById('specializationFilter').value;
+            const yearLevel = document.getElementById('yearLevelFilter').value;
+
+            let volumeUrl = '/admin/api/reports/chart-data';
+            const volumeParams = new URLSearchParams();
+            if (programId) volumeParams.append('program_id', programId);
+            if (specializationId) volumeParams.append('specialization_id', specializationId);
+            if (yearLevel) volumeParams.append('year_level', yearLevel);
+            if (volumeParams.toString()) volumeUrl += '?' + volumeParams.toString();
+
+            fetch(volumeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && typeChartInstance) {
+                        typeChartInstance.data.datasets[0].data = [data.volume_data.quiz, data.volume_data.exam];
+                        typeChartInstance.update();
+                    }
+                })
+                .catch(error => console.error('Error loading chart data:', error));
+
+            let subjectUrl = '/admin/api/reports/subject-performance';
+            const subjectParams = new URLSearchParams();
+            if (programId) subjectParams.append('program_id', programId);
+            if (specializationId) subjectParams.append('specialization_id', specializationId);
+            if (yearLevel) subjectParams.append('year_level', yearLevel);
+            if (subjectParams.toString()) subjectUrl += '?' + subjectParams.toString();
+
+            fetch(subjectUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && scoreChartInstance) {
+                        scoreChartInstance.data.labels = data.subject_performance.labels;
+                        scoreChartInstance.data.datasets[0].data = data.subject_performance.quiz_scores;
+                        scoreChartInstance.data.datasets[1].data = data.subject_performance.exam_scores;
+                        scoreChartInstance.update();
+                    }
+                })
+                .catch(error => console.error('Error loading subject performance data:', error));
+        }
+
+        function generateReport() {
+            const programId = document.getElementById('programFilter').value;
+            const specializationId = document.getElementById('specializationFilter').value;
+            const yearLevel = document.getElementById('yearLevelFilter').value;
+            const sectionId = document.getElementById('sectionFilter').value;
+            const subjectId = document.getElementById('subjectFilter').value;
+            const examId = document.getElementById('examFilter').value;
+
+            let url = '/admin/api/reports/generate';
+            const params = new URLSearchParams();
+            if (programId) params.append('program_id', programId);
+            if (specializationId) params.append('specialization_id', specializationId);
+            if (yearLevel) params.append('year_level', yearLevel);
+            if (sectionId) params.append('section_id', sectionId);
+            if (subjectId) params.append('subject_id', subjectId);
+            if (examId) params.append('exam_id', examId);
+            if (params.toString()) url += '?' + params.toString();
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalStudents').textContent = data.summary_stats.total_students;
+                        document.getElementById('averageScore').textContent = data.summary_stats.average_score + '%';
+                        document.getElementById('highestScore').textContent = data.summary_stats.highest_score + '%';
+                        document.getElementById('passingRate').textContent = data.summary_stats.passing_rate + '%';
+
+                        const tbody = document.getElementById('sectionPerformanceBody');
+                        tbody.innerHTML = '';
+                        data.section_performance.forEach(section => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td><span class="section-name">${section.program_code} ${section.year_level}${section.section}</span></td>
+                                    <td><span class="student-count">${section.student_count}</span></td>
+                                    <td><span class="score-val">${section.avg_score}%</span></td>
+                                    <td>
+                                        <div class="pass-rate-label">
+                                            <span>Passed</span>
+                                            <span>${section.pass_rate}%</span>
+                                        </div>
+                                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${section.pass_rate}%;"></div></div>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+
+                        loadChartData();
+                    }
+                })
+                .catch(error => console.error('Error generating report:', error));
+        }
+    </script>
 
 </div>
+{% endblock %}
 
-<!-- SUMMARY -->
-
-<div class="cards">
-
-<div class="card">
-<h3>Total Students</h3>
-<p>35</p>
-</div>
-
-<div class="card">
-<h3>Average Score</h3>
-<p>82%</p>
-</div>
-
-<div class="card">
-<h3>Highest Score</h3>
-<p>95%</p>
-</div>
-
-<div class="card">
-<h3>Passing Rate</h3>
-<p>90%</p>
-</div>
-
-</div>
-
-<!-- CHARTS -->
-
-<div class="charts">
-
-<div class="chart">
-Pass vs Fail Chart
-</div>
-
-<div class="chart">
-Score Distribution Chart
-</div>
-
-</div>
-
-<!-- SECTION PERFORMANCE -->
-
-<div class="table-container">
-
-<h3>Section Performance</h3>
-
-<table>
-
-<thead>
-<tr>
-<th>Section</th>
-<th>Students</th>
-<th>Average Score</th>
-<th>Pass Rate</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr>
-<td>BSIT 2A</td>
-<td>35</td>
-<td>82%</td>
-<td>90%</td>
-</tr>
-
-<tr>
-<td>BSIT 2B</td>
-<td>30</td>
-<td>79%</td>
-<td>85%</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</body>
-</html>
+{% block extra_js %}
+<script>
+    // Reserved for base template JS
+</script>
+{% endblock %}

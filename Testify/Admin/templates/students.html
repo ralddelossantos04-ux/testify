@@ -310,6 +310,128 @@
     </div>
 </div>
 
+<!-- Edit Student Modal -->
+<div class="modal" id="editStudentModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" onclick="if(event.target===this)closeModal(this.id)">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h5 class="modal-title" id="editModalTitle"><i class="fas fa-edit"></i> Edit Student Profile</h5>
+            <button class="modal-close" onclick="closeModal('editStudentModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="editStudentForm" novalidate autocomplete="off">
+                <input type="hidden" id="editUserId" name="user_id">
+                <!-- Names -->
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label" for="editFirstName">First Name <span class="req">*</span></label>
+                        <input type="text" class="form-control" id="editFirstName" name="first_name" placeholder="Juan">
+                        <div class="field-error" id="err_edit_first_name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editMiddleName">Middle Name</label>
+                        <input type="text" class="form-control" id="editMiddleName" name="middle_name" placeholder="(Optional)">
+                        <div class="field-error" id="err_edit_middle_name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editLastName">Last Name <span class="req">*</span></label>
+                        <input type="text" class="form-control" id="editLastName" name="last_name" placeholder="Dela Cruz">
+                        <div class="field-error" id="err_edit_last_name"></div>
+                    </div>
+                </div>
+                <!-- Gender + Birthdate -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="editGender">Gender <span class="req">*</span></label>
+                        <select class="form-select" name="gender" id="editGender">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <div class="field-error" id="err_edit_gender"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editBirthdate">Birthdate <span class="req">*</span></label>
+                        <input type="date" class="form-control" id="editBirthdate" name="birthdate">
+                        <div class="field-error" id="err_edit_birthdate"></div>
+                    </div>
+                </div>
+                <!-- Contact -->
+                <div class="form-group">
+                    <label class="form-label" for="editContact">Contact Number <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="editContact" name="contact_number" placeholder="09XXXXXXXXX" maxlength="11">
+                    <div class="field-error" id="err_edit_contact_number"></div>
+                </div>
+                <!-- Address -->
+                <div class="form-group">
+                    <label class="form-label">Address <span class="req">*</span></label>
+                    <div class="address-grid">
+                        <div>
+                            <select class="form-select" name="province" id="editProvince">
+                                <option value="">— Province —</option>
+                                <option>Abra</option><option>Agusan del Norte</option><option>Agusan del Sur</option>
+                                <option>Aklan</option><option>Albay</option><option>Antique</option>
+                                <option>Apayao</option><option>Aurora</option><option>Basilan</option>
+                                <option>Bataan</option><option>Batanes</option><option>Batangas</option>
+                                <option>Benguet</option><option>Biliran</option><option>Bohol</option>
+                                <option>Bukidnon</option><option>Bulacan</option><option>Cagayan</option>
+                                <option>Camarines Norte</option><option>Camarines Sur</option>
+                                <option>Camiguin</option><option>Capiz</option><option>Catanduanes</option>
+                                <option>Cavite</option><option>Cebu</option><option>Cotabato</option>
+                                <option>Davao de Oro</option><option>Davao del Norte</option>
+                                <option>Davao del Sur</option><option>Davao Occidental</option>
+                                <option>Davao Oriental</option><option>Dinagat Islands</option>
+                                <option>Eastern Samar</option><option>Guimaras</option>
+                                <option>Ifugao</option><option>Ilocos Norte</option><option>Ilocos Sur</option>
+                                <option>Iloilo</option><option>Isabela</option><option>Kalinga</option>
+                                <option>La Union</option><option>Laguna</option><option>Lanao del Norte</option>
+                                <option>Lanao del Sur</option><option>Leyte</option>
+                                <option>Maguindanao del Norte</option><option>Maguindanao del Sur</option>
+                                <option>Marinduque</option><option>Masbate</option>
+                                <option>Metro Manila</option>
+                                <option>Misamis Occidental</option><option>Misamis Oriental</option>
+                                <option>Mountain Province</option><option>Negros Occidental</option>
+                                <option>Negros Oriental</option><option>Northern Samar</option>
+                                <option>Nueva Ecija</option><option>Nueva Vizcaya</option>
+                                <option>Occidental Mindoro</option><option>Oriental Mindoro</option>
+                                <option>Palawan</option><option>Pampanga</option><option>Pangasinan</option>
+                                <option>Quezon</option><option>Quirino</option><option>Rizal</option>
+                                <option>Romblon</option><option>Samar</option><option>Sarangani</option>
+                                <option>Siquijor</option><option>Sorsogon</option>
+                                <option>South Cotabato</option><option>Southern Leyte</option>
+                                <option>Sultan Kudarat</option><option>Sulu</option>
+                                <option>Surigao del Norte</option><option>Surigao del Sur</option>
+                                <option>Tarlac</option><option>Tawi-Tawi</option>
+                                <option>Zambales</option><option>Zamboanga del Norte</option>
+                                <option>Zamboanga del Sur</option><option>Zamboanga Sibugay</option>
+                            </select>
+                            <div class="field-error" id="err_edit_province"></div>
+                        </div>
+                        <div>
+                            <select class="form-select" name="municipal" id="editMunicipal">
+                                <option value="">— Municipality —</option>
+                            </select>
+                            <div class="field-error" id="err_edit_municipal"></div>
+                        </div>
+                        <div>
+                            <select class="form-select" name="barangay" id="editBarangay">
+                                <option value="">— Barangay —</option>
+                            </select>
+                            <div class="field-error" id="err_edit_barangay"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('editStudentModal')">Cancel</button>
+            <button class="btn btn-primary" id="editStudentBtn" onclick="submitEditStudent()">
+                <i class="fas fa-spinner fa-spin" id="editStudentSpinner" style="display:none"></i>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_css %}
@@ -1162,7 +1284,232 @@ function viewStudent(userId) {
 
 function editStudent(userId) {
     closeAllActionMenus();
-    showNotification('Edit feature is coming soon', 'info');
+    
+    // Clear form first
+    const form = document.getElementById('editStudentForm');
+    if (form) form.reset();
+    document.querySelectorAll('#editStudentForm .field-error').forEach(el => el.textContent = '');
+    document.querySelectorAll('#editStudentForm .is-invalid, #editStudentForm .is-valid').forEach(el => {
+        el.classList.remove('is-invalid','is-valid');
+    });
+    resetAddressDropdowns('editMunicipal','editBarangay');
+    
+    fetch(`/admin/api/students/view/${userId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const student = data.student;
+                
+                document.getElementById('editUserId').value = student.user_id;
+                document.getElementById('editFirstName').value = student.first_name || '';
+                document.getElementById('editMiddleName').value = student.middle_name || '';
+                document.getElementById('editLastName').value = student.last_name || '';
+                
+                // Handle gender
+                const genderSelect = document.getElementById('editGender');
+                const genderValue = student.gender ? student.gender.trim() : '';
+                genderSelect.value = genderValue;
+                
+                if (genderSelect.value !== genderValue && genderValue) {
+                    for (let option of genderSelect.options) {
+                        if (option.value === genderValue || option.text === genderValue) {
+                            option.selected = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Handle birthdate
+                if (student.birthdate) {
+                    let birthdateStr = student.birthdate;
+                    if (birthdateStr.length > 10) {
+                        birthdateStr = birthdateStr.substring(0, 10);
+                    }
+                    document.getElementById('editBirthdate').value = birthdateStr;
+                } else {
+                    document.getElementById('editBirthdate').value = '';
+                }
+                
+                document.getElementById('editContact').value = student.contact_number || '';
+                
+                // Handle address - try to parse province, municipal, barangay from address string
+                if (student.address) {
+                    const provinceSelect = document.getElementById('editProvince');
+                    const municipalSelect = document.getElementById('editMunicipal');
+                    const barangaySelect = document.getElementById('editBarangay');
+                    
+                    // Try to find province in the address
+                    let foundProvince = false;
+                    for (let option of provinceSelect.options) {
+                        if (option.value && student.address.includes(option.value)) {
+                            provinceSelect.value = option.value;
+                            populateMunicipalities(option.value, municipalSelect, barangaySelect);
+                            foundProvince = true;
+                            break;
+                        }
+                    }
+                    
+                    // If province not found, try to set it directly if it matches a known province
+                    if (!foundProvince) {
+                        for (let option of provinceSelect.options) {
+                            if (option.value && option.value.toLowerCase() === student.address.toLowerCase()) {
+                                provinceSelect.value = option.value;
+                                populateMunicipalities(option.value, municipalSelect, barangaySelect);
+                                foundProvince = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                openModal('editStudentModal');
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading student details:', error);
+            showNotification('Failed to load student details', 'error');
+        });
+}
+
+function submitEditStudent() {
+    const NAME_RE = /^[A-Za-z]+(\s[A-Za-z]+)*\.?$/;
+    const CONTACT_RE = /^(09|\+63)\d{9}$/;
+
+    function normalise(val) { return (val||'').replace(/\s+/g,' ').trim(); }
+    function cap(str) { return str.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' '); }
+    function setErr(fId, eId, msg) {
+        const el=document.getElementById(fId), er=document.getElementById(eId);
+        if(el){el.classList.add('is-invalid');el.classList.remove('is-valid');}
+        if(er) er.textContent=msg;
+    }
+    function clrErr(fId, eId) {
+        const el=document.getElementById(fId), er=document.getElementById(eId);
+        if(el){el.classList.remove('is-invalid');el.classList.add('is-valid');}
+        if(er) er.textContent='';
+    }
+
+    ['editFirstName','editMiddleName','editLastName'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el&&el.value) el.value=cap(normalise(el.value));
+    });
+
+    let ok=true;
+    const errList = [];
+    
+    function addErr(fId, eId, msg) {
+        setErr(fId, eId, msg);
+        errList.push('• ' + msg);
+        ok = false;
+    }
+
+    const fn=document.getElementById('editFirstName')?.value||'';
+    if(!fn){addErr('editFirstName','err_edit_first_name','First name is required.');}
+    else if(!NAME_RE.test(fn)){addErr('editFirstName','err_edit_first_name','First name must contain letters only.');}
+    else clrErr('editFirstName','err_edit_first_name');
+
+    const mn=document.getElementById('editMiddleName')?.value||'';
+    if(mn&&!NAME_RE.test(mn)){addErr('editMiddleName','err_edit_middle_name','Middle name must contain letters only.');}
+    else clrErr('editMiddleName','err_edit_middle_name');
+
+    const ln=document.getElementById('editLastName')?.value||'';
+    if(!ln){addErr('editLastName','err_edit_last_name','Last name is required.');}
+    else if(!NAME_RE.test(ln)){addErr('editLastName','err_edit_last_name','Last name must contain letters only.');}
+    else clrErr('editLastName','err_edit_last_name');
+
+    const gender=document.getElementById('editGender')?.value||'';
+    if(!gender){addErr('editGender','err_edit_gender','Please select a gender.');}
+    else clrErr('editGender','err_edit_gender');
+
+    const bd=document.getElementById('editBirthdate')?.value||'';
+    if(!bd){addErr('editBirthdate','err_edit_birthdate','Birthdate is required.');}
+    else if(!/^\d{4}-\d{2}-\d{2}$/.test(bd)){addErr('editBirthdate','err_edit_birthdate','Use YYYY-MM-DD format.');}
+    else clrErr('editBirthdate','err_edit_birthdate');
+
+    const contact=(document.getElementById('editContact')?.value||'').trim();
+    const digs=contact.replace(/\D/g,'');
+    if(!contact){addErr('editContact','err_edit_contact_number','Contact number is required.');}
+    else if(!CONTACT_RE.test(contact)){addErr('editContact','err_edit_contact_number','Contact number must start with 09 or +63, 11 digits total.');}
+    else if(/(.)\1\1/.test(digs)){addErr('editContact','err_edit_contact_number','Contact number cannot have 3+ consecutive identical digits.');}
+    else clrErr('editContact','err_edit_contact_number');
+
+    const prov=document.getElementById('editProvince')?.value||'';
+    if(!prov){addErr('editProvince','err_edit_province','Province is required.');}
+    else clrErr('editProvince','err_edit_province');
+
+    const mun=document.getElementById('editMunicipal')?.value||'';
+    if(!mun){addErr('editMunicipal','err_edit_municipal','Municipality is required.');}
+    else clrErr('editMunicipal','err_edit_municipal');
+
+    const bar=document.getElementById('editBarangay')?.value||'';
+    if(!bar){addErr('editBarangay','err_edit_barangay','Barangay is required.');}
+    else clrErr('editBarangay','err_edit_barangay');
+
+    if(!ok){ 
+        let errorMsg = '<strong>Validation Failed</strong><br>';
+        errorMsg += '<div style="margin-top:5px;font-size:0.9em;line-height:1.4;">' + errList.join('<br>') + '</div>';
+        showNotification(errorMsg,'warning'); 
+        return; 
+    }
+
+    const btn=document.getElementById('editStudentBtn');
+    const spinner=document.getElementById('editStudentSpinner');
+    if(btn) btn.disabled=true;
+    if(spinner) spinner.style.display='inline-block';
+
+    const data = {
+        first_name: fn,
+        middle_name: mn,
+        last_name: ln,
+        gender,
+        birthdate: bd,
+        contact_number: contact,
+        province: prov,
+        municipal: mun,
+        barangay: bar
+    };
+
+    fetch(`/admin/api/students/edit/${document.getElementById('editUserId').value}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
+    })
+    .then(r=>r.json())
+    .then(result=>{
+        if(btn) btn.disabled=false;
+        if(spinner) spinner.style.display='none';
+        if(result.success){
+            showNotification(result.message||'Student updated successfully.','success');
+            closeModal('editStudentModal');
+            document.getElementById('editStudentForm').reset();
+            resetAddressDropdowns('editMunicipal','editBarangay');
+            loadStudents();
+            loadStats();
+        } else {
+            let errorMsg = '<strong>' + (result.message || 'Validation failed.') + '</strong><br>';
+            if(result.errors){
+                const MAP={first_name:'editFirstName',last_name:'editLastName',middle_name:'editMiddleName',
+                    gender:'editGender',birthdate:'editBirthdate',
+                    contact_number:'editContact',province:'editProvince',municipal:'editMunicipal',
+                    barangay:'editBarangay'};
+                const errList = [];
+                Object.entries(result.errors).forEach(([k,v])=>{ 
+                    if(MAP[k]) setErr(MAP[k],'err_edit_'+k,v); 
+                    errList.push('• ' + v);
+                });
+                if(errList.length > 0) {
+                    errorMsg += '<div style="margin-top:5px;font-size:0.9em;line-height:1.4;">' + errList.join('<br>') + '</div>';
+                }
+            }
+            showNotification(errorMsg, 'error');
+        }
+    })
+    .catch(()=>{
+        if(btn) btn.disabled=false;
+        if(spinner) spinner.style.display='none';
+        showNotification('Failed to update student. Please try again.','error');
+    });
 }
 
 function toggleStudentStatus(userId, newStatus) {
@@ -1279,6 +1626,56 @@ document.addEventListener('DOMContentLoaded', function() {
             populateBarangays(document.getElementById('addProvince').value, this.value, barSel);
         });
     }
+
+    // Input Restrictions for edit form (real-time formatting)
+    ['editFirstName', 'editMiddleName', 'editLastName'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener('input', function() {
+                this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+                this.classList.remove('is-invalid');
+                const err = document.getElementById('err_edit_' + id.replace('edit', '').toLowerCase());
+                if(err) err.textContent = '';
+            });
+        }
+    });
+
+    const editContactEl = document.getElementById('editContact');
+    if(editContactEl) {
+        editContactEl.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, ''); // Remove non-digits
+            if (val.length > 0 && val[0] !== '0') val = '0' + val.substring(1);
+            if (val.length > 1 && val[1] !== '9') val = '09' + val.substring(2);
+            this.value = val;
+            this.classList.remove('is-invalid');
+            const err = document.getElementById('err_edit_contact_number');
+            if(err) err.textContent = '';
+        });
+    }
+
+    // Clear errors on input for other edit form fields
+    ['editGender', 'editBirthdate', 'editProvince', 'editMunicipal', 'editBarangay'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+                let errId = 'err_edit_' + id.replace('edit', '');
+                const err = document.getElementById(errId);
+                if(err) err.textContent = '';
+            });
+        }
+    });
+
+    // Wire up province→municipality→barangay cascade for edit form
+    const editProvSel = document.getElementById('editProvince');
+    const editMunSel  = document.getElementById('editMunicipal');
+    const editBarSel  = document.getElementById('editBarangay');
+    if (editProvSel) editProvSel.addEventListener('change', function() {
+        populateMunicipalities(this.value, editMunSel, editBarSel);
+    });
+    if (editMunSel) editMunSel.addEventListener('change', function() {
+        populateBarangays(document.getElementById('editProvince').value, this.value, editBarSel);
+    });
 });
 
 </script>

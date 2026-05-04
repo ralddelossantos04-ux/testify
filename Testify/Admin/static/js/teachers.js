@@ -224,10 +224,7 @@ function renderTeachers(teachers) {
                             <button class="action-menu-item" onclick="editTeacher(${teacher.user_id})">
                                 <i class="fas fa-edit text-success"></i> Edit Profile
                             </button>
-                            <button class="action-menu-item" onclick="assignTeacher(${teacher.user_id})">
-                                <i class="fas fa-tasks text-primary"></i> Assign
-                            </button>
-                            <button class="action-menu-item" onclick="resetTeacherPassword(${teacher.user_id})">
+                                                        <button class="action-menu-item" onclick="resetTeacherPassword(${teacher.user_id})">
                                 <i class="fas fa-key text-warning"></i> Reset Password
                             </button>
                             <button class="action-menu-item warning" onclick="toggleTeacherStatus(${teacher.user_id}, '${(teacher.status || '').toLowerCase() === 'active' ? 'Inactive' : 'Active'}')">
@@ -444,6 +441,11 @@ function editTeacher(userId) {
     // Clear form first
     const form = document.getElementById('editTeacherForm');
     if (form) form.reset();
+    document.querySelectorAll('#editTeacherForm .field-error').forEach(el => el.textContent = '');
+    document.querySelectorAll('#editTeacherForm .is-invalid, #editTeacherForm .is-valid').forEach(el => {
+        el.classList.remove('is-invalid','is-valid');
+    });
+    resetAddressDropdowns('editMunicipal','editBarangay');
     
     fetch(`/admin/api/teachers/view/${userId}`)
         .then(r => r.json())
@@ -490,8 +492,38 @@ function editTeacher(userId) {
                     document.getElementById('editBirthdate').value = '';
                 }
                 
-                document.getElementById('editAddress').value = teacher.address || '';
-                document.getElementById('editContactNumber').value = teacher.contact_number || '';
+                document.getElementById('editContact').value = teacher.contact_number || '';
+                
+                // Handle address - try to parse province, municipal, barangay from address string
+                // If not possible, set province to the full address
+                if (teacher.address) {
+                    const provinceSelect = document.getElementById('editProvince');
+                    const municipalSelect = document.getElementById('editMunicipal');
+                    const barangaySelect = document.getElementById('editBarangay');
+                    
+                    // Try to find province in the address
+                    let foundProvince = false;
+                    for (let option of provinceSelect.options) {
+                        if (option.value && teacher.address.includes(option.value)) {
+                            provinceSelect.value = option.value;
+                            populateMunicipalities(option.value, municipalSelect, barangaySelect);
+                            foundProvince = true;
+                            break;
+                        }
+                    }
+                    
+                    // If province not found, try to set it directly if it matches a known province
+                    if (!foundProvince) {
+                        for (let option of provinceSelect.options) {
+                            if (option.value && option.value.toLowerCase() === teacher.address.toLowerCase()) {
+                                provinceSelect.value = option.value;
+                                populateMunicipalities(option.value, municipalSelect, barangaySelect);
+                                foundProvince = true;
+                                break;
+                            }
+                        }
+                    }
+                }
                 
                 openModal('editTeacherModal');
             } else {
@@ -505,47 +537,143 @@ function editTeacher(userId) {
 }
 
 function submitEditTeacher() {
-    const form = document.getElementById('editTeacherForm');
-    if (!form) return;
+    const NAME_RE = /^[A-Za-z]+(\s[A-Za-z]+)*\.?$/;
+    const CONTACT_RE = /^(09|\+63)\d{9}$/;
 
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-
-    if (!data.first_name.trim() || !data.last_name.trim() || !data.gender) {
-        showNotification('First name, last name, and gender are required', 'warning');
-        return;
+    function normalise(val) { return (val||'').replace(/\s+/g,' ').trim(); }
+    function cap(str) { return str.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' '); }
+    function setErr(fId, eId, msg) {
+        const el=document.getElementById(fId), er=document.getElementById(eId);
+        if(el){el.classList.add('is-invalid');el.classList.remove('is-valid');}
+        if(er) er.textContent=msg;
+    }
+    function clrErr(fId, eId) {
+        const el=document.getElementById(fId), er=document.getElementById(eId);
+        if(el){el.classList.remove('is-invalid');el.classList.add('is-valid');}
+        if(er) er.textContent='';
     }
 
-    const spinner = document.getElementById('editTeacherSpinner');
-    if (spinner) spinner.style.display = 'inline-block';
+    ['editFirstName','editMiddleName','editLastName'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el&&el.value) el.value=cap(normalise(el.value));
+    });
 
-    fetch(`/admin/api/teachers/edit/${data.user_id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+    let ok=true;
+    const errList = [];
+    
+    function addErr(fId, eId, msg) {
+        setErr(fId, eId, msg);
+        errList.push('• ' + msg);
+        ok = false;
+    }
+
+    const fn=document.getElementById('editFirstName')?.value||'';
+    if(!fn){addErr('editFirstName','err_edit_first_name','First name is required.');}
+    else if(!NAME_RE.test(fn)){addErr('editFirstName','err_edit_first_name','First name must contain letters only.');}
+    else clrErr('editFirstName','err_edit_first_name');
+
+    const mn=document.getElementById('editMiddleName')?.value||'';
+    if(mn&&!NAME_RE.test(mn)){addErr('editMiddleName','err_edit_middle_name','Middle name must contain letters only.');}
+    else clrErr('editMiddleName','err_edit_middle_name');
+
+    const ln=document.getElementById('editLastName')?.value||'';
+    if(!ln){addErr('editLastName','err_edit_last_name','Last name is required.');}
+    else if(!NAME_RE.test(ln)){addErr('editLastName','err_edit_last_name','Last name must contain letters only.');}
+    else clrErr('editLastName','err_edit_last_name');
+
+    const gender=document.getElementById('editGender')?.value||'';
+    if(!gender){addErr('editGender','err_edit_gender','Please select a gender.');}
+    else clrErr('editGender','err_edit_gender');
+
+    const bd=document.getElementById('editBirthdate')?.value||'';
+    if(!bd){addErr('editBirthdate','err_edit_birthdate','Birthdate is required.');}
+    else if(!/^\d{4}-\d{2}-\d{2}$/.test(bd)){addErr('editBirthdate','err_edit_birthdate','Use YYYY-MM-DD format.');}
+    else clrErr('editBirthdate','err_edit_birthdate');
+
+    const contact=(document.getElementById('editContact')?.value||'').trim();
+    const digs=contact.replace(/\D/g,'');
+    if(!contact){addErr('editContact','err_edit_contact_number','Contact number is required.');}
+    else if(!CONTACT_RE.test(contact)){addErr('editContact','err_edit_contact_number','Contact number must start with 09 or +63, 11 digits total.');}
+    else if(/(.)\1\1/.test(digs)){addErr('editContact','err_edit_contact_number','Contact number cannot have 3+ consecutive identical digits.');}
+    else clrErr('editContact','err_edit_contact_number');
+
+    const prov=document.getElementById('editProvince')?.value||'';
+    if(!prov){addErr('editProvince','err_edit_province','Province is required.');}
+    else clrErr('editProvince','err_edit_province');
+
+    const mun=document.getElementById('editMunicipal')?.value||'';
+    if(!mun){addErr('editMunicipal','err_edit_municipal','Municipality is required.');}
+    else clrErr('editMunicipal','err_edit_municipal');
+
+    const bar=document.getElementById('editBarangay')?.value||'';
+    if(!bar){addErr('editBarangay','err_edit_barangay','Barangay is required.');}
+    else clrErr('editBarangay','err_edit_barangay');
+
+    if(!ok){ 
+        let errorMsg = '<strong>Validation Failed</strong><br>';
+        errorMsg += '<div style="margin-top:5px;font-size:0.9em;line-height:1.4;">' + errList.join('<br>') + '</div>';
+        showNotification(errorMsg,'warning'); 
+        return; 
+    }
+
+    const btn=document.getElementById('editTeacherBtn');
+    const spinner=document.getElementById('editTeacherSpinner');
+    if(btn) btn.disabled=true;
+    if(spinner) spinner.style.display='inline-block';
+
+    const data = {
+        first_name: fn,
+        middle_name: mn,
+        last_name: ln,
+        gender,
+        birthdate: bd,
+        contact_number: contact,
+        province: prov,
+        municipal: mun,
+        barangay: bar
+    };
+
+    fetch(`/admin/api/teachers/edit/${document.getElementById('editUserId').value}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
     })
-    .then(r => r.json())
-    .then(result => {
-        if (spinner) spinner.style.display = 'none';
-        if (result.success) {
-            showNotification(result.message || 'Teacher profile updated successfully', 'success');
+    .then(r=>r.json())
+    .then(result=>{
+        if(btn) btn.disabled=false;
+        if(spinner) spinner.style.display='none';
+        if(result.success){
+            showNotification(result.message||'Teacher updated successfully.','success');
             closeModal('editTeacherModal');
+            document.getElementById('editTeacherForm').reset();
+            resetAddressDropdowns('editMunicipal','editBarangay');
             loadTeachers();
         } else {
-            showNotification(result.message, 'error');
+            let errorMsg = '<strong>' + (result.message || 'Validation failed.') + '</strong><br>';
+            if(result.errors){
+                const MAP={first_name:'editFirstName',last_name:'editLastName',middle_name:'editMiddleName',
+                    gender:'editGender',birthdate:'editBirthdate',
+                    contact_number:'editContact',province:'editProvince',municipal:'editMunicipal',
+                    barangay:'editBarangay'};
+                const errList = [];
+                Object.entries(result.errors).forEach(([k,v])=>{ 
+                    if(MAP[k]) setErr(MAP[k],'err_edit_'+k,v); 
+                    errList.push('• ' + v);
+                });
+                if(errList.length > 0) {
+                    errorMsg += '<div style="margin-top:5px;font-size:0.9em;line-height:1.4;">' + errList.join('<br>') + '</div>';
+                }
+            }
+            showNotification(errorMsg, 'error');
         }
     })
-    .catch(error => {
-        if (spinner) spinner.style.display = 'none';
-        console.error('Error updating teacher:', error);
-        showNotification('Failed to update teacher', 'error');
+    .catch(()=>{
+        if(btn) btn.disabled=false;
+        if(spinner) spinner.style.display='none';
+        showNotification('Failed to update teacher. Please try again.','error');
     });
 }
 
-function assignTeacher(userId) {
-    closeAllActionMenus();
-    showNotification('Assign feature is coming soon', 'info');
-}
 
 function resetTeacherPassword(userId) {
     closeAllActionMenus();

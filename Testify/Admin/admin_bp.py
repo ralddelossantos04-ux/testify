@@ -22,6 +22,31 @@ def get_db_connection():
 
 
 # ============================================
+# ACTIVITY LOGGING HELPER
+# ============================================
+def log_activity(user_id, role, action, target_table, target_id, description, ip_address=None):
+    """Helper function to log system activities to system_activity_logs table."""
+    db = get_db_connection()
+    cursor = db.cursor()
+    try:
+        cursor.execute(
+            """
+            INSERT INTO system_activity_logs
+                (user_id, role, action, target_table, target_id, description, ip_address, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+            """,
+            (user_id, role, action, target_table, target_id, description, ip_address)
+        )
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error logging activity: {e}")
+    finally:
+        cursor.close()
+        db.close()
+
+
+# ============================================
 # BLOCK AUTO-GENERATION HELPERS
 # ============================================
 def get_next_section(program_id, year_level):
@@ -408,13 +433,702 @@ def api_results_specializations(program_id):
 @admin.route('/reports')
 @role_required('ADMIN')
 def reports():
-    return render_template('reports.html')
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Fetch programs for dropdown
+    cursor.execute("SELECT program_id, program_code, program_name FROM programs ORDER BY program_code")
+    programs = cursor.fetchall()
+
+    # Fetch summary statistics
+    # Total students who have attempted exams
+    cursor.execute("""
+        SELECT COUNT(DISTINCT ea.student_id) as total_students
+        FROM exam_attempts ea
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+    """)
+    total_students = cursor.fetchone()['total_students'] or 0
+
+    # Average score (percentage)
+    cursor.execute("""
+        SELECT AVG((ea.score / e.total_questions) * 100) as avg_score
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+        AND e.total_questions > 0
+    """)
+    avg_score = cursor.fetchone()['avg_score'] or 0
+
+    # Highest score (percentage)
+    cursor.execute("""
+        SELECT MAX((ea.score / e.total_questions) * 100) as max_score
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+        AND e.total_questions > 0
+    """)
+    highest_score = cursor.fetchone()['max_score'] or 0
+
+    # Passing rate (percentage of students who scored >= 60%)
+    cursor.execute("""
+        SELECT 
+            COUNT(CASE WHEN (ea.score / e.total_questions) * 100 >= 60 THEN 1 END) * 100.0 / COUNT(*) as passing_rate
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+        AND e.total_questions > 0
+    """)
+    passing_rate = cursor.fetchone()['passing_rate'] or 0
+
+    # Section performance data
+    cursor.execute("""
+        SELECT 
+            b.block_name,
+            b.year_level,
+            b.section,
+            p.program_code,
+            COUNT(DISTINCT ea.student_id) as student_count,
+            AVG((ea.score / e.total_questions) * 100) as avg_score,
+            COUNT(CASE WHEN (ea.score / e.total_questions) * 100 >= 60 THEN 1 END) * 100.0 / COUNT(*) as pass_rate
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        JOIN student_profiles sp ON ea.student_id = sp.student_id
+        JOIN blocks b ON sp.block_id = b.block_id
+        JOIN programs p ON sp.program_id = p.program_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+        AND e.total_questions > 0
+        GROUP BY b.block_id, b.block_name, b.year_level, b.section, p.program_code
+        ORDER BY p.program_code, b.year_level, b.section
+    """)
+    section_performance = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    # Format statistics
+    summary_stats = {
+        'total_students': total_students,
+        'average_score': round(avg_score, 1),
+        'highest_score': round(highest_score, 1),
+        'passing_rate': round(passing_rate, 1)
+    }
+
+    # Format section performance
+    for section in section_performance:
+        section['avg_score'] = round(section['avg_score'], 1) if section['avg_score'] else 0
+        section['pass_rate'] = round(section['pass_rate'], 1) if section['pass_rate'] else 0
+
+    return render_template('reports.html',
+                          programs=programs,
+                          summary_stats=summary_stats,
+                          section_performance=section_performance)
+
+
+# ============================================
+# REPORTS API ROUTES
+# ============================================
+
+@admin.route('/api/reports/year-levels/<int:program_id>')
+@role_required('ADMIN')
+def api_reports_year_levels(program_id):
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT DISTINCT year_level
+        FROM blocks
+        WHERE program_id = %s
+        ORDER BY year_level
+    """, (program_id,))
+    year_levels = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify({'success': True, 'year_levels': year_levels})
+
+
+@admin.route('/api/reports/specializations/<int:program_id>')
+@role_required('ADMIN')
+def api_reports_specializations(program_id):
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT specialization_id, specialization_name, specialization_code
+        FROM specializations
+        WHERE program_id = %s
+        ORDER BY specialization_code
+    """, (program_id,))
+    specializations = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify({'success': True, 'specializations': specializations})
+
+
+@admin.route('/api/reports/sections')
+@role_required('ADMIN')
+def api_reports_sections():
+    program_id = request.args.get('program_id', '')
+    year_level = request.args.get('year_level', '')
+    
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    query = "SELECT block_id, block_name, section FROM blocks WHERE 1=1"
+    params = []
+    
+    if program_id:
+        query += " AND program_id = %s"
+        params.append(program_id)
+    
+    if year_level:
+        query += " AND year_level = %s"
+        params.append(year_level)
+    
+    query += " ORDER BY section"
+    
+    cursor.execute(query, params)
+    sections = cursor.fetchall()
+    cursor.close()
+    db.close()
+    
+    return jsonify({'success': True, 'sections': sections})
+
+
+@admin.route('/api/reports/subjects/<int:program_id>')
+@role_required('ADMIN')
+def api_reports_subjects(program_id):
+    year_level = request.args.get('year_level', '')
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    query = """
+        SELECT s.subject_id, s.subject_code, s.subject_name
+        FROM subjects s
+        WHERE s.program_id = %s
+    """
+    params = [program_id]
+    
+    if year_level:
+        query += " AND s.year_level = %s"
+        params.append(year_level)
+    
+    query += " ORDER BY s.subject_code"
+    
+    cursor.execute(query, params)
+    subjects = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify({'success': True, 'subjects': subjects})
+
+
+@admin.route('/api/reports/exams')
+@role_required('ADMIN')
+def api_reports_exams():
+    subject_id = request.args.get('subject_id', '')
+    
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    query = """
+        SELECT e.exam_id, e.exam_title
+        FROM exams e
+        JOIN course_assignments ca ON e.assignment_id = ca.assignment_id
+        WHERE 1=1
+    """
+    params = []
+    
+    if subject_id:
+        query += " AND ca.subject_id = %s"
+        params.append(subject_id)
+    
+    query += " ORDER BY e.exam_title"
+    
+    cursor.execute(query, params)
+    exams = cursor.fetchall()
+    cursor.close()
+    db.close()
+    
+    return jsonify({'success': True, 'exams': exams})
+
+
+@admin.route('/api/reports/generate')
+@role_required('ADMIN')
+def api_reports_generate():
+    program_id = request.args.get('program_id', '')
+    specialization_id = request.args.get('specialization_id', '')
+    year_level = request.args.get('year_level', '')
+    section_id = request.args.get('section_id', '')
+    subject_id = request.args.get('subject_id', '')
+    exam_id = request.args.get('exam_id', '')
+    
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # Build summary statistics query with filters
+    summary_query = """
+        SELECT 
+            COUNT(DISTINCT ea.student_id) as total_students,
+            AVG((ea.score / e.total_questions) * 100) as avg_score,
+            MAX((ea.score / e.total_questions) * 100) as max_score,
+            COUNT(CASE WHEN (ea.score / e.total_questions) * 100 >= 60 THEN 1 END) * 100.0 / COUNT(*) as passing_rate
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        JOIN student_profiles sp ON ea.student_id = sp.student_id
+        JOIN blocks b ON sp.block_id = b.block_id
+        JOIN programs p ON sp.program_id = p.program_id
+        JOIN course_assignments ca ON e.assignment_id = ca.assignment_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+        AND e.total_questions > 0
+    """
+    summary_params = []
+    
+    # Build section performance query with filters
+    section_query = """
+        SELECT 
+            b.block_name,
+            b.year_level,
+            b.section,
+            p.program_code,
+            COUNT(DISTINCT ea.student_id) as student_count,
+            AVG((ea.score / e.total_questions) * 100) as avg_score,
+            COUNT(CASE WHEN (ea.score / e.total_questions) * 100 >= 60 THEN 1 END) * 100.0 / COUNT(*) as pass_rate
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        JOIN student_profiles sp ON ea.student_id = sp.student_id
+        JOIN blocks b ON sp.block_id = b.block_id
+        JOIN programs p ON sp.program_id = p.program_id
+        JOIN course_assignments ca ON e.assignment_id = ca.assignment_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+        AND e.total_questions > 0
+    """
+    section_params = []
+    
+    # Apply filters
+    if program_id:
+        summary_query += " AND p.program_id = %s"
+        section_query += " AND p.program_id = %s"
+        summary_params.append(program_id)
+        section_params.append(program_id)
+    
+    if specialization_id:
+        spec_code = get_specialization_code(specialization_id)
+        if spec_code:
+            summary_query += " AND b.block_name LIKE %s"
+            section_query += " AND b.block_name LIKE %s"
+            summary_params.append(f"%{spec_code}%")
+            section_params.append(f"%{spec_code}%")
+    
+    if year_level:
+        summary_query += " AND b.year_level = %s"
+        section_query += " AND b.year_level = %s"
+        summary_params.append(year_level)
+        section_params.append(year_level)
+    
+    if section_id:
+        summary_query += " AND b.block_id = %s"
+        section_query += " AND b.block_id = %s"
+        summary_params.append(section_id)
+        section_params.append(section_id)
+    
+    if subject_id:
+        summary_query += " AND ca.subject_id = %s"
+        section_query += " AND ca.subject_id = %s"
+        summary_params.append(subject_id)
+        section_params.append(subject_id)
+    
+    if exam_id:
+        summary_query += " AND e.exam_id = %s"
+        section_query += " AND e.exam_id = %s"
+        summary_params.append(exam_id)
+        section_params.append(exam_id)
+    
+    # Add grouping for section query
+    section_query += " GROUP BY b.block_id, b.block_name, b.year_level, b.section, p.program_code ORDER BY p.program_code, b.year_level, b.section"
+    
+    # Fetch summary statistics
+    cursor.execute(summary_query, summary_params)
+    summary = cursor.fetchone()
+    
+    # Fetch section performance
+    cursor.execute(section_query, section_params)
+    section_performance = cursor.fetchall()
+    
+    cursor.close()
+    db.close()
+    
+    # Format summary stats
+    summary_stats = {
+        'total_students': summary['total_students'] or 0,
+        'average_score': round(summary['avg_score'] or 0, 1),
+        'highest_score': round(summary['max_score'] or 0, 1),
+        'passing_rate': round(summary['passing_rate'] or 0, 1)
+    }
+    
+    # Format section performance
+    for section in section_performance:
+        section['avg_score'] = round(section['avg_score'] or 0, 1)
+        section['pass_rate'] = round(section['pass_rate'] or 0, 1)
+    
+    return jsonify({
+        'success': True,
+        'summary_stats': summary_stats,
+        'section_performance': section_performance
+    })
+
+
+@admin.route('/api/reports/chart-data')
+@role_required('ADMIN')
+def api_reports_chart_data():
+    program_id = request.args.get('program_id', '')
+    specialization_id = request.args.get('specialization_id', '')
+    year_level = request.args.get('year_level', '')
+    section_id = request.args.get('section_id', '')
+    subject_id = request.args.get('subject_id', '')
+    exam_id = request.args.get('exam_id', '')
+    
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # Build query for assessment volume by type
+    query = """
+        SELECT 
+            e.exam_type,
+            COUNT(*) as count
+        FROM exam_attempts ea
+        JOIN exams e ON ea.exam_id = e.exam_id
+        JOIN student_profiles sp ON ea.student_id = sp.student_id
+        JOIN blocks b ON sp.block_id = b.block_id
+        JOIN programs p ON sp.program_id = p.program_id
+        JOIN course_assignments ca ON e.assignment_id = ca.assignment_id
+        WHERE ea.status IN ('Submitted', 'Auto Submitted')
+    """
+    params = []
+    
+    # Apply filters
+    if program_id:
+        query += " AND p.program_id = %s"
+        params.append(program_id)
+    
+    if specialization_id:
+        query += " AND b.block_name LIKE %s"
+        params.append(f"%{get_specialization_code(specialization_id)}%")
+    
+    if year_level:
+        query += " AND b.year_level = %s"
+        params.append(year_level)
+    
+    if section_id:
+        query += " AND b.block_id = %s"
+        params.append(section_id)
+    
+    if subject_id:
+        query += " AND ca.subject_id = %s"
+        params.append(subject_id)
+    
+    if exam_id:
+        query += " AND e.exam_id = %s"
+        params.append(exam_id)
+    
+    query += " GROUP BY e.exam_type"
+    
+    cursor.execute(query, params)
+    volume_data = cursor.fetchall()
+    
+    cursor.close()
+    db.close()
+    
+    # Format data for chart
+    quiz_count = 0
+    exam_count = 0
+    for item in volume_data:
+        if item['exam_type'] == 'Quiz':
+            quiz_count = item['count']
+        elif item['exam_type'] == 'Exam':
+            exam_count = item['count']
+    
+    return jsonify({
+        'success': True,
+        'volume_data': {
+            'quiz': quiz_count,
+            'exam': exam_count
+        }
+    })
+
+
+def get_specialization_code(specialization_id):
+    """Helper function to get specialization code from ID"""
+    if not specialization_id:
+        return ''
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT specialization_code FROM specializations WHERE specialization_id = %s", (specialization_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    db.close()
+    return result['specialization_code'] if result else ''
+
+
+@admin.route('/api/reports/subject-performance')
+@role_required('ADMIN')
+def api_reports_subject_performance():
+    program_id = request.args.get('program_id', '')
+    specialization_id = request.args.get('specialization_id', '')
+    year_level = request.args.get('year_level', '')
+    
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # Build query for subject performance
+    # This fetches subjects based on program, year level, and considers specialization
+    query = """
+        SELECT 
+            s.subject_id,
+            s.subject_code,
+            s.subject_name,
+            s.year_level,
+            p.program_code,
+            sp.specialization_name,
+            COALESCE(AVG(CASE WHEN e.exam_type = 'Quiz' THEN (ea.score / e.total_questions) * 100 END), 0) as avg_quiz_score,
+            COALESCE(AVG(CASE WHEN e.exam_type = 'Exam' THEN (ea.score / e.total_questions) * 100 END), 0) as avg_exam_score
+        FROM subjects s
+        LEFT JOIN programs p ON s.program_id = p.program_id
+        LEFT JOIN specializations sp ON s.specialization_id = sp.specialization_id
+        LEFT JOIN course_assignments ca ON s.subject_id = ca.subject_id
+        LEFT JOIN exams e ON ca.assignment_id = e.assignment_id
+        LEFT JOIN exam_attempts ea ON e.exam_id = ea.exam_id AND ea.status IN ('Submitted', 'Auto Submitted')
+        WHERE 1=1
+    """
+    params = []
+    
+    # Apply filters
+    if program_id:
+        query += " AND s.program_id = %s"
+        params.append(program_id)
+    
+    if specialization_id:
+        query += " AND s.specialization_id = %s"
+        params.append(specialization_id)
+    
+    if year_level:
+        query += " AND s.year_level = %s"
+        params.append(year_level)
+    
+    query += " GROUP BY s.subject_id, s.subject_code, s.subject_name, s.year_level, p.program_code, sp.specialization_name"
+    query += " ORDER BY s.subject_code"
+    
+    cursor.execute(query, params)
+    subject_data = cursor.fetchall()
+    
+    cursor.close()
+    db.close()
+    
+    # Format data for chart
+    labels = []
+    quiz_scores = []
+    exam_scores = []
+    
+    for subject in subject_data:
+        label = f"{subject['subject_code']} ({subject['subject_name']})"
+        labels.append(label)
+        quiz_scores.append(round(subject['avg_quiz_score'], 1) if subject['avg_quiz_score'] else 0)
+        exam_scores.append(round(subject['avg_exam_score'], 1) if subject['avg_exam_score'] else 0)
+    
+    return jsonify({
+        'success': True,
+        'subject_performance': {
+            'labels': labels,
+            'quiz_scores': quiz_scores,
+            'exam_scores': exam_scores
+        }
+    })
+
+
+@admin.route('/api/activity_logs/<int:log_id>')
+@role_required('ADMIN')
+def api_activity_log_details(log_id):
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT
+            sal.log_id,
+            sal.user_id,
+            sal.role,
+            sal.action,
+            sal.target_table,
+            sal.target_id,
+            sal.description,
+            sal.ip_address,
+            sal.created_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.email,
+            u.username,
+            CONCAT(u.first_name, ' ', u.last_name) as full_name
+        FROM system_activity_logs sal
+        JOIN users u ON sal.user_id = u.user_id
+        WHERE sal.log_id = %s
+    """, (log_id,))
+    
+    log = cursor.fetchone()
+    cursor.close()
+    db.close()
+    
+    if not log:
+        return jsonify({'success': False, 'message': 'Activity log not found'}), 404
+    
+    # Format timestamp
+    if log['created_at']:
+        log['created_at_formatted'] = log['created_at'].strftime('%B %d, %Y at %I:%M %p')
+    
+    return jsonify({'success': True, 'log': log})
 
 
 @admin.route('/activity_logs')
 @role_required('ADMIN')
 def activity_logs():
-    return render_template('activity_logs.html')
+    # Get filter parameters
+    search = request.args.get('search', '').strip()
+    role_filter = request.args.get('role', '')
+    module_filter = request.args.get('module', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 15
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Build query for system activity logs
+    query = """
+        SELECT
+            sal.log_id,
+            sal.user_id,
+            sal.role,
+            sal.action,
+            sal.target_table,
+            sal.target_id,
+            sal.description,
+            sal.ip_address,
+            sal.created_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            CONCAT(u.first_name, ' ', u.last_name) as full_name
+        FROM system_activity_logs sal
+        JOIN users u ON sal.user_id = u.user_id
+        WHERE 1=1
+    """
+    count_query = """
+        SELECT COUNT(*) as total
+        FROM system_activity_logs sal
+        JOIN users u ON sal.user_id = u.user_id
+        WHERE 1=1
+    """
+    params = []
+
+    # Apply search filter
+    if search:
+        query += " AND (u.first_name LIKE %s OR u.last_name LIKE %s OR sal.action LIKE %s OR sal.description LIKE %s)"
+        count_query += " AND (u.first_name LIKE %s OR u.last_name LIKE %s OR sal.action LIKE %s OR sal.description LIKE %s)"
+        search_term = f"%{search}%"
+        params.extend([search_term, search_term, search_term, search_term])
+
+    # Apply role filter
+    if role_filter:
+        query += " AND sal.role = %s"
+        count_query += " AND sal.role = %s"
+        params.append(role_filter)
+
+    # Apply module filter based on target_table
+    if module_filter == 'users':
+        query += " AND sal.target_table IN ('users', 'student_profiles', 'teacher_profiles')"
+        count_query += " AND sal.target_table IN ('users', 'student_profiles', 'teacher_profiles')"
+    elif module_filter == 'programs':
+        query += " AND sal.target_table IN ('programs', 'subjects', 'blocks')"
+        count_query += " AND sal.target_table IN ('programs', 'subjects', 'blocks')"
+    elif module_filter == 'exams':
+        query += " AND sal.target_table IN ('exams', 'exam_questions')"
+        count_query += " AND sal.target_table IN ('exams', 'exam_questions')"
+    elif module_filter == 'assignments':
+        query += " AND sal.target_table = 'course_assignments'"
+        count_query += " AND sal.target_table = 'course_assignments'"
+
+    query += " ORDER BY sal.created_at DESC LIMIT %s OFFSET %s"
+    params.extend([per_page, (page - 1) * per_page])
+
+    # Fetch activity logs
+    cursor.execute(query, params)
+    logs = cursor.fetchall()
+
+    # Get total count for pagination
+    cursor.execute(count_query, params[:-2])
+    total = cursor.fetchone()['total']
+
+    cursor.close()
+    db.close()
+
+    # Format data for template
+    for log in logs:
+        # Format timestamp
+        if log['created_at']:
+            log['date_display'] = log['created_at'].strftime('%B %d, %Y')
+            log['time_display'] = log['created_at'].strftime('%I:%M %p')
+        
+        # Generate initials for avatar
+        initials = ''.join([word[0].upper() for word in log['full_name'].split() if word])[:2]
+        log['initials'] = initials if initials else 'UN'
+        
+        # Determine action type and badge color
+        action_lower = log['action'].lower()
+        if 'add' in action_lower or 'create' in action_lower:
+            log['action_type'] = 'Created'
+            log['badge_class'] = 'bg-green-100 text-green-700 border-green-200'
+        elif 'update' in action_lower or 'edit' in action_lower:
+            log['action_type'] = 'Updated'
+            log['badge_class'] = 'bg-blue-100 text-blue-700 border-blue-200'
+        elif 'publish' in action_lower:
+            log['action_type'] = 'Published'
+            log['badge_class'] = 'bg-purple-100 text-purple-700 border-purple-200'
+        elif 'close' in action_lower or 'deactivate' in action_lower:
+            log['action_type'] = 'Closed'
+            log['badge_class'] = 'bg-red-100 text-red-700 border-red-200'
+        elif 'assign' in action_lower:
+            log['action_type'] = 'Assigned'
+            log['badge_class'] = 'bg-orange-100 text-orange-700 border-orange-200'
+        else:
+            log['action_type'] = log['action']
+            log['badge_class'] = 'bg-gray-100 text-gray-700 border-gray-200'
+        
+        # Determine icon based on target_table
+        target_table = log['target_table']
+        if target_table in ['users', 'student_profiles', 'teacher_profiles']:
+            log['icon'] = 'ph-user-plus'
+        elif target_table == 'programs':
+            log['icon'] = 'ph-buildings'
+        elif target_table == 'subjects':
+            log['icon'] = 'ph-books'
+        elif target_table == 'blocks':
+            log['icon'] = 'ph-users-three'
+        elif target_table in ['exams', 'exam_questions']:
+            log['icon'] = 'ph-file-text'
+        elif target_table == 'course_assignments':
+            log['icon'] = 'ph-chalkboard-teacher'
+        else:
+            log['icon'] = 'ph-list-magnifying-glass'
+
+    total_pages = (total + per_page - 1) // per_page if total > 0 else 1
+    showing_start = (page - 1) * per_page + 1 if total > 0 else 0
+    showing_end = min(page * per_page, total) if total > 0 else 0
+
+    return render_template('activity_logs.html',
+                          logs=logs,
+                          search=search,
+                          role_filter=role_filter,
+                          module_filter=module_filter,
+                          page=page,
+                          per_page=per_page,
+                          total=total,
+                          total_pages=total_pages,
+                          showing_start=showing_start,
+                          showing_end=showing_end)
 
 
 @admin.route('/announcements')
@@ -721,6 +1435,20 @@ def create_teacher():
         cursor.close()
         db.close()
 
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action='Add teacher',
+            target_table='teacher_profiles',
+            target_id=user_id,
+            description=f'Created new teacher: {first_name} {last_name} (Employee ID: {employee_id})',
+            ip_address=admin_ip
+        )
+
         return jsonify({
             'success': True,
             'message': 'Teacher added successfully.',
@@ -757,6 +1485,22 @@ def update_teacher_status(user_id):
 
         cursor.close()
         db.close()
+        
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        action_type = 'Deactivate user' if status == 'Inactive' else 'Update user'
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action=action_type,
+            target_table='users',
+            target_id=user_id,
+            description=f'{action_type}: Teacher ID {user_id} status changed to {status}',
+            ip_address=admin_ip
+        )
+        
         return jsonify({'success': True, 'message': 'Status updated successfully'})
     except Exception as e:
         cursor.close()
@@ -991,6 +1735,20 @@ def add_program():
 
         cursor.close()
         db.close()
+
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action='Add program',
+            target_table='programs',
+            target_id=new_id,
+            description=f'Created new program: {program_name} ({program_code})',
+            ip_address=admin_ip
+        )
 
         return jsonify({
             'success': True,
@@ -1243,6 +2001,20 @@ def add_block():
         new_id = cursor.lastrowid
         cursor.close()
         db.close()
+
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action='Create block',
+            target_table='blocks',
+            target_id=new_id,
+            description=f'Created new block: {block_name} (Year {year_level}, Section {section})',
+            ip_address=admin_ip
+        )
 
         return jsonify({
             'success': True,
@@ -1618,6 +2390,20 @@ def add_student():
         cursor.close()
         db.close()
 
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action='Add student',
+            target_table='student_profiles',
+            target_id=user_id,
+            description=f'Created new student: {first_name} {last_name} (Student Number: {student_number})',
+            ip_address=admin_ip
+        )
+
         return jsonify({
             'success': True,
             'message': 'Student added successfully.',
@@ -1709,6 +2495,22 @@ def update_student_status(user_id):
 
         cursor.close()
         db.close()
+        
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        action_type = 'Deactivate user' if status == 'Inactive' else 'Update user'
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action=action_type,
+            target_table='users',
+            target_id=user_id,
+            description=f'{action_type}: Student ID {user_id} status changed to {status}',
+            ip_address=admin_ip
+        )
+        
         return jsonify({'success': True, 'message': 'Status updated successfully'})
     except Exception as e:
         cursor.close()
@@ -2051,6 +2853,21 @@ def add_subject():
         """, (subject_code, subject_name, program_id, year_level, specialization_id))
         db.commit()
         new_id = cursor.lastrowid
+        
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action='Add subject',
+            target_table='subjects',
+            target_id=new_id,
+            description=f'Created new subject: {subject_name} ({subject_code})',
+            ip_address=admin_ip
+        )
+        
         return jsonify({
             'success': True,
             'message': 'Subject added successfully',
@@ -2419,6 +3236,21 @@ def assign_teacher():
         db.commit()
         cursor.close()
         db.close()
+        
+        # Log the activity
+        from flask import session
+        admin_user_id = session.get('user_id')
+        admin_ip = request.remote_addr
+        log_activity(
+            user_id=admin_user_id,
+            role='admin',
+            action='Assign teacher',
+            target_table='course_assignments',
+            target_id=teacher_id,
+            description=f'Assigned teacher ID {teacher_id} to subject ID {subject_id}, block ID {block_id}',
+            ip_address=admin_ip
+        )
+        
         return jsonify({'success': True, 'message': 'Teacher assigned successfully'})
     except Exception as e:
         cursor.close()
