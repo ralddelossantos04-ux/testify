@@ -1,0 +1,213 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Dashboard - Testify Examination System{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb_item %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Statistics Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Students</h3>
+                <div class="stat-value">1,250</div>
+                <div class="stat-change" style="color: #22c55e;"><i class="fas fa-arrow-up"></i> 12% from last month</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chalkboard-user"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Teachers</h3>
+                <div class="stat-value">45</div>
+                <div class="stat-change" style="color: #22c55e;"><i class="fas fa-arrow-up"></i> 5% from last month</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Active Exams</h3>
+                <div class="stat-value">12</div>
+                <div class="stat-change">3 ending soon</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Avg. Score</h3>
+                <div class="stat-value">78.5%</div>
+                <div class="stat-change" style="color: #ff6b6b;"><i class="fas fa-arrow-down"></i> 2% from last month</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px;">
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Activity</h2>
+                <a href="#" class="btn btn-secondary btn-sm">View All</a>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(108, 92, 231, 0.2); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 0.9em;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 4px;">John Doe completed Exam</div>
+                        <div style="font-size: 0.85em; color: var(--text-gray);">2 hours ago</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(251, 146, 60, 0.2); display: flex; align-items: center; justify-content: center; color: #fb923c; font-size: 0.9em;">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 4px;">Jane Smith submitted Assignment</div>
+                        <div style="font-size: 0.85em; color: var(--text-gray);">5 hours ago</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 16px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(34, 197, 94, 0.2); display: flex; align-items: center; justify-content: center; color: #22c55e; font-size: 0.9em;">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 4px;">New announcement posted</div>
+                        <div style="font-size: 0.85em; color: var(--text-gray);">1 day ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Quick Actions</h2>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn btn-primary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fas fa-user-plus"></i> Add New Student
+                </button>
+                <button class="btn btn-primary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fas fa-file-alt"></i> Create New Exam
+                </button>
+                <button class="btn btn-primary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fas fa-question-circle"></i> Create New Quiz
+                </button>
+                <button class="btn btn-primary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fas fa-bell"></i> Post Announcement
+                </button>
+                <button class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Exams -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h2 class="card-title">Upcoming Exams</h2>
+            <a href="#" class="btn btn-secondary btn-sm">View All Exams</a>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>Subject</th>
+                        <th>Class</th>
+                        <th>Date</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600;">Mathematics Mid Term</td>
+                        <td>Mathematics</td>
+                        <td>Class A</td>
+                        <td>April 28, 2026</td>
+                        <td>2 hours</td>
+                        <td><span class="badge badge-warning">Scheduled</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm">Edit</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">English Final Exam</td>
+                        <td>English</td>
+                        <td>Class B</td>
+                        <td>May 2, 2026</td>
+                        <td>2.5 hours</td>
+                        <td><span class="badge badge-warning">Scheduled</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm">Edit</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">Science Quiz</td>
+                        <td>Science</td>
+                        <td>Class C</td>
+                        <td>May 5, 2026</td>
+                        <td>1 hour</td>
+                        <td><span class="badge badge-primary">Draft</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm">Edit</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Performance Overview -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Performance Overview</h2>
+            <a href="#" class="btn btn-secondary btn-sm">View Detailed Report</a>
+        </div>
+        <div style="padding: 20px; border-top: 1px solid var(--border-color);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 12px;">Exam Pass Rate</div>
+                    <div style="height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 85%; height: 100%; background: #22c55e; border-radius: 4px;"></div>
+                    </div>
+                    <div style="font-size: 0.85em; color: var(--text-gray); margin-top: 8px;">85% of students passed</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 12px;">Assignment Submission</div>
+                    <div style="height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 92%; height: 100%; background: #22c55e; border-radius: 4px;"></div>
+                    </div>
+                    <div style="font-size: 0.85em; color: var(--text-gray); margin-top: 8px;">92% submission rate</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 12px;">Average Score</div>
+                    <div style="height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 78%; height: 100%; background: #fb923c; border-radius: 4px;"></div>
+                    </div>
+                    <div style="font-size: 0.85em; color: var(--text-gray); margin-top: 8px;">78.5% average score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

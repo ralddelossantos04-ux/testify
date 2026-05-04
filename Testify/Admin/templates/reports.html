@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Exam Reports</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+margin:0;
+background:#f5f6fa;
+}
+
+.container{
+padding:30px;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+/* FILTERS */
+
+.filters{
+display:grid;
+grid-template-columns: repeat(5,1fr);
+gap:15px;
+background:white;
+padding:20px;
+border-radius:8px;
+margin-bottom:20px;
+}
+
+.filters select{
+padding:8px;
+border:1px solid #ccc;
+border-radius:4px;
+}
+
+.generate{
+grid-column: span 5;
+padding:10px;
+background:#3b82f6;
+color:white;
+border:none;
+border-radius:4px;
+cursor:pointer;
+}
+
+/* SUMMARY CARDS */
+
+.cards{
+display:grid;
+grid-template-columns: repeat(4,1fr);
+gap:20px;
+margin-bottom:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:8px;
+text-align:center;
+}
+
+.card h3{
+margin:0;
+font-size:14px;
+color:#555;
+}
+
+.card p{
+font-size:24px;
+font-weight:bold;
+margin-top:10px;
+}
+
+/* CHART PLACEHOLDER */
+
+.charts{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+margin-bottom:20px;
+}
+
+.chart{
+background:white;
+height:250px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:8px;
+color:#777;
+}
+
+/* TABLE */
+
+.table-container{
+background:white;
+padding:20px;
+border-radius:8px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th, td{
+padding:10px;
+border-bottom:1px solid #eee;
+text-align:left;
+}
+
+th{
+background:#f1f2f6;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Exam Reports</h1>
+
+<div class="filters">
+
+<select>
+<option>Program</option>
+<option>BSIT</option>
+<option>BSBA</option>
+</select>
+
+<select>
+<option>Year Level</option>
+<option>2nd Year</option>
+</select>
+
+<select>
+<option>Section</option>
+<option>A</option>
+</select>
+
+<select>
+<option>Subject</option>
+<option>Database</option>
+</select>
+
+<select>
+<option>Exam Title</option>
+<option>Quiz 1</option>
+</select>
+
+<button class="generate">Generate Report</button>
+
+</div>
+
+<!-- SUMMARY -->
+
+<div class="cards">
+
+<div class="card">
+<h3>Total Students</h3>
+<p>35</p>
+</div>
+
+<div class="card">
+<h3>Average Score</h3>
+<p>82%</p>
+</div>
+
+<div class="card">
+<h3>Highest Score</h3>
+<p>95%</p>
+</div>
+
+<div class="card">
+<h3>Passing Rate</h3>
+<p>90%</p>
+</div>
+
+</div>
+
+<!-- CHARTS -->
+
+<div class="charts">
+
+<div class="chart">
+Pass vs Fail Chart
+</div>
+
+<div class="chart">
+Score Distribution Chart
+</div>
+
+</div>
+
+<!-- SECTION PERFORMANCE -->
+
+<div class="table-container">
+
+<h3>Section Performance</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Section</th>
+<th>Students</th>
+<th>Average Score</th>
+<th>Pass Rate</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>BSIT 2A</td>
+<td>35</td>
+<td>82%</td>
+<td>90%</td>
+</tr>
+
+<tr>
+<td>BSIT 2B</td>
+<td>30</td>
+<td>79%</td>
+<td>85%</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</body>
+</html>

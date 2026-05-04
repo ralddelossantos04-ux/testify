@@ -146,46 +146,145 @@
             <button class="modal-close" onclick="closeModal('addStudentModal')" aria-label="Close modal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <form id="addStudentForm">
-                <div class="form-group">
-                    <label class="form-label" for="addFirstName">First Name</label>
-                    <input type="text" class="form-control" id="addFirstName" name="first_name" required placeholder="Enter first name">
+            <form id="addStudentForm" novalidate autocomplete="off">
+                <!-- Row: First / Middle / Last -->
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label" for="addFirstName">First Name <span class="req">*</span></label>
+                        <input type="text" class="form-control" id="addFirstName" name="first_name" placeholder="Juan" autocomplete="off">
+                        <div class="field-error" id="err_first_name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="addMiddleName">Middle Name</label>
+                        <input type="text" class="form-control" id="addMiddleName" name="middle_name" placeholder="(optional)" autocomplete="off">
+                        <div class="field-error" id="err_middle_name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="addLastName">Last Name <span class="req">*</span></label>
+                        <input type="text" class="form-control" id="addLastName" name="last_name" placeholder="Dela Cruz" autocomplete="off">
+                        <div class="field-error" id="err_last_name"></div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="addLastName">Last Name</label>
-                    <input type="text" class="form-control" id="addLastName" name="last_name" required placeholder="Enter last name">
+                <!-- Row: Gender / Birthdate -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="addGender">Gender <span class="req">*</span></label>
+                        <select class="form-select" name="gender" id="addGender">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <div class="field-error" id="err_gender"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="addBirthdate">Birthdate <span class="req">*</span></label>
+                        <input type="date" class="form-control" id="addBirthdate" name="birthdate">
+                        <div class="field-error" id="err_birthdate"></div>
+                    </div>
                 </div>
+                <!-- Email -->
                 <div class="form-group">
-                    <label class="form-label" for="addEmail">Email</label>
-                    <input type="email" class="form-control" id="addEmail" name="email" required placeholder="Enter email address">
+                    <label class="form-label" for="addEmail">Email <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="addEmail" name="email" placeholder="name@gmail.com" autocomplete="off">
+                    <div class="field-error" id="err_email"></div>
                 </div>
+                <!-- Contact -->
                 <div class="form-group">
-                    <label class="form-label" for="addProgram">Program</label>
-                    <select class="form-select" name="program_id" id="addProgram" required>
-                        <option value="">Select Program</option>
-                    </select>
+                    <label class="form-label" for="addContact">Contact Number <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="addContact" name="contact_number" placeholder="09XXXXXXXXX" maxlength="11" autocomplete="off">
+                    <div class="field-error" id="err_contact_number"></div>
                 </div>
-                <div class="form-group" id="specializationContainer" style="display: none;">
+                <!-- Address -->
+                <div class="form-group">
+                    <label class="form-label">Address <span class="req">*</span></label>
+                    <div class="address-grid">
+                        <div>
+                            <select class="form-select" name="province" id="addProvince">
+                                <option value="">— Province —</option>
+                                <option>Abra</option><option>Agusan del Norte</option><option>Agusan del Sur</option>
+                                <option>Aklan</option><option>Albay</option><option>Antique</option>
+                                <option>Apayao</option><option>Aurora</option><option>Basilan</option>
+                                <option>Bataan</option><option>Batanes</option><option>Batangas</option>
+                                <option>Benguet</option><option>Biliran</option><option>Bohol</option>
+                                <option>Bukidnon</option><option>Bulacan</option><option>Cagayan</option>
+                                <option>Camarines Norte</option><option>Camarines Sur</option>
+                                <option>Camiguin</option><option>Capiz</option><option>Catanduanes</option>
+                                <option>Cavite</option><option>Cebu</option><option>Cotabato</option>
+                                <option>Davao de Oro</option><option>Davao del Norte</option>
+                                <option>Davao del Sur</option><option>Davao Occidental</option>
+                                <option>Davao Oriental</option><option>Dinagat Islands</option>
+                                <option>Eastern Samar</option><option>Guimaras</option>
+                                <option>Ifugao</option><option>Ilocos Norte</option><option>Ilocos Sur</option>
+                                <option>Iloilo</option><option>Isabela</option><option>Kalinga</option>
+                                <option>La Union</option><option>Laguna</option><option>Lanao del Norte</option>
+                                <option>Lanao del Sur</option><option>Leyte</option>
+                                <option>Maguindanao del Norte</option><option>Maguindanao del Sur</option>
+                                <option>Marinduque</option><option>Masbate</option>
+                                <option>Metro Manila</option>
+                                <option>Misamis Occidental</option><option>Misamis Oriental</option>
+                                <option>Mountain Province</option><option>Negros Occidental</option>
+                                <option>Negros Oriental</option><option>Northern Samar</option>
+                                <option>Nueva Ecija</option><option>Nueva Vizcaya</option>
+                                <option>Occidental Mindoro</option><option>Oriental Mindoro</option>
+                                <option>Palawan</option><option>Pampanga</option><option>Pangasinan</option>
+                                <option>Quezon</option><option>Quirino</option><option>Rizal</option>
+                                <option>Romblon</option><option>Samar</option><option>Sarangani</option>
+                                <option>Siquijor</option><option>Sorsogon</option>
+                                <option>South Cotabato</option><option>Southern Leyte</option>
+                                <option>Sultan Kudarat</option><option>Sulu</option>
+                                <option>Surigao del Norte</option><option>Surigao del Sur</option>
+                                <option>Tarlac</option><option>Tawi-Tawi</option>
+                                <option>Zambales</option><option>Zamboanga del Norte</option>
+                                <option>Zamboanga del Sur</option><option>Zamboanga Sibugay</option>
+                            </select>
+                            <div class="field-error" id="err_province"></div>
+                        </div>
+                        <div>
+                            <select class="form-select" name="municipal" id="addMunicipal">
+                                <option value="">— Municipality —</option>
+                            </select>
+                            <div class="field-error" id="err_municipal"></div>
+                        </div>
+                        <div>
+                            <select class="form-select" name="barangay" id="addBarangay">
+                                <option value="">— Barangay —</option>
+                            </select>
+                            <div class="field-error" id="err_barangay"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Academic -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="addProgram">Program <span class="req">*</span></label>
+                        <select class="form-select" name="program_id" id="addProgram">
+                            <option value="">Select Program</option>
+                        </select>
+                        <div class="field-error" id="err_program_id"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="addYearLevel">Year Level <span class="req">*</span></label>
+                        <select class="form-select" name="year_level" id="addYearLevel">
+                            <option value="">Select Year Level</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                        <div class="field-error" id="err_year_level"></div>
+                    </div>
+                </div>
+                <div class="form-group" id="specializationContainer" style="display:none">
                     <label class="form-label" for="addSpecialization">Specialization</label>
                     <select class="form-select" name="specialization_id" id="addSpecialization">
                         <option value="">Select Specialization</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="addYearLevel">Year Level</label>
-                    <select class="form-select" name="year_level" id="addYearLevel" required>
-                        <option value="">Select Year Level</option>
-                        <option value="1">1st Year</option>
-                        <option value="2">2nd Year</option>
-                        <option value="3">3rd Year</option>
-                        <option value="4">4th Year</option>
                     </select>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
-            <button class="btn btn-primary" onclick="submitAddStudent()">
+            <button class="btn btn-primary" id="addStudentBtn" onclick="submitAddStudent()">
                 <i class="fas fa-spinner fa-spin" id="addStudentSpinner" style="display:none"></i>
                 Add Student
             </button>
@@ -259,6 +358,22 @@
     .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
     .form-select { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95em; font-family: inherit; background-color: var(--bg-white); color: var(--text-dark); cursor: pointer; transition: var(--transition); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
     .form-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+
+    /* Validation styles */
+    .form-control.is-invalid, .form-select.is-invalid { border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,0.15); }
+    .form-control.is-valid, .form-select.is-valid { border-color: #22c55e; }
+    .field-error { font-size: 0.82em; color: #ff6b6b; margin-top: 5px; min-height: 18px; font-weight: 500; }
+    .req { color: #ff6b6b; margin-left: 2px; }
+    .form-label small { font-weight: 400; color: var(--text-light); font-size: 0.85em; margin-left: 4px; }
+
+    /* Multi-column form rows */
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 .form-group, .form-row-2 .form-group { justify-content: flex-end; }
+    .address-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 600px) {
+        .form-row-3, .form-row-2, .address-grid { grid-template-columns: 1fr; }
+    }
 
     /* Table */
     .table-responsive { overflow-x: auto; border-radius: 12px; }
@@ -412,7 +527,7 @@ function hideSkeleton() {
 // ============================================
 
 function loadStats() {
-    fetch('/api/students/counts')
+    fetch('/admin/api/students/counts')
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -481,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================
 
 function loadPrograms() {
-    fetch('/api/programs')
+    fetch('/admin/api/programs')
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -515,7 +630,7 @@ function loadStudents() {
         search: currentSearch
     });
 
-    fetch(`/api/students?${params}`)
+    fetch(`/admin/api/students?${params}`)
         .then(r => r.json())
         .then(data => {
             hideSkeleton();
@@ -716,8 +831,20 @@ function updateResultCount(total) {
 
 function openAddStudentModal() {
     const form = document.getElementById('addStudentForm');
-    if (form) form.reset();
-    document.getElementById('specializationContainer').style.display = 'none';
+    if (form) { form.reset(); }
+    // Clear all field errors
+    document.querySelectorAll('#addStudentForm .field-error').forEach(el => el.textContent = '');
+    document.querySelectorAll('#addStudentForm .is-invalid, #addStudentForm .is-valid').forEach(el => {
+        el.classList.remove('is-invalid', 'is-valid');
+    });
+    const specCont = document.getElementById('specializationContainer');
+    if (specCont) specCont.style.display = 'none';
+    
+    // Reset address cascade dropdowns
+    if (typeof resetAddressDropdowns === 'function') {
+        resetAddressDropdowns('addMunicipal', 'addBarangay');
+    }
+    
     openModal('addStudentModal');
 }
 
@@ -725,39 +852,174 @@ function submitAddStudent() {
     const form = document.getElementById('addStudentForm');
     if (!form) return;
 
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+    // --- Helpers ---
+    const NAME_RE = /^[A-Za-z]+(\s[A-Za-z]+)*\.?$/;
+    const EMAIL_RE = /^[a-z0-9._%+\-]+@gmail\.com$/;
+    const CONTACT_RE = /^(09|\+63)\d{9}$/;
 
-    if (!data.first_name.trim() || !data.last_name.trim() || !data.email.trim() || !data.program_id || !data.year_level) {
-        showNotification('Please fill in all required fields', 'warning');
-        return;
+    function normalise(val) {
+        return (val || '').replace(/\s+/g, ' ').trim();
+    }
+    function capitalise(str) {
+        return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    }
+    function setError(fieldId, errId, msg) {
+        const el = document.getElementById(fieldId);
+        const er = document.getElementById(errId);
+        if (el) { el.classList.add('is-invalid'); el.classList.remove('is-valid'); }
+        if (er) er.textContent = msg;
+    }
+    function clearError(fieldId, errId) {
+        const el = document.getElementById(fieldId);
+        const er = document.getElementById(errId);
+        if (el) { el.classList.remove('is-invalid'); el.classList.add('is-valid'); }
+        if (er) er.textContent = '';
     }
 
+    // Normalise name inputs only
+    ['addFirstName','addMiddleName','addLastName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value) el.value = capitalise(normalise(el.value));
+    });
+    const email = (document.getElementById('addEmail')?.value || '').toLowerCase().trim();
+    if (document.getElementById('addEmail')) document.getElementById('addEmail').value = email;
+
+    let valid = true;
+    const errList = [];
+
+    function addErr(fId, eId, msg) {
+        setError(fId, eId, msg);
+        errList.push('• ' + msg);
+        valid = false;
+    }
+
+    // First name
+    const fn = document.getElementById('addFirstName')?.value || '';
+    if (!fn) { addErr('addFirstName','err_first_name','First name is required.'); }
+    else if (!NAME_RE.test(fn)) { addErr('addFirstName','err_first_name','First name must contain letters only.'); }
+    else clearError('addFirstName','err_first_name');
+
+    // Middle name (optional)
+    const mn = document.getElementById('addMiddleName')?.value || '';
+    if (mn && !NAME_RE.test(mn)) { addErr('addMiddleName','err_middle_name','Middle name must contain letters only.'); }
+    else clearError('addMiddleName','err_middle_name');
+
+    // Last name
+    const ln = document.getElementById('addLastName')?.value || '';
+    if (!ln) { addErr('addLastName','err_last_name','Last name is required.'); }
+    else if (!NAME_RE.test(ln)) { addErr('addLastName','err_last_name','Last name must contain letters only.'); }
+    else clearError('addLastName','err_last_name');
+
+    // Gender
+    const gender = document.getElementById('addGender')?.value || '';
+    if (!gender) { addErr('addGender','err_gender','Please select a gender.'); }
+    else clearError('addGender','err_gender');
+
+    // Birthdate
+    const bd = document.getElementById('addBirthdate')?.value || '';
+    if (!bd) { addErr('addBirthdate','err_birthdate','Birthdate is required.'); }
+    else if (!/^\d{4}-\d{2}-\d{2}$/.test(bd)) { addErr('addBirthdate','err_birthdate','Use YYYY-MM-DD format.'); }
+    else clearError('addBirthdate','err_birthdate');
+
+    // Email
+    if (!email) { addErr('addEmail','err_email','Email is required.'); }
+    else if (!EMAIL_RE.test(email)) { addErr('addEmail','err_email','Must be a valid Gmail address (name@gmail.com).'); }
+    else clearError('addEmail','err_email');
+
+    // Contact
+    const contact = (document.getElementById('addContact')?.value || '').trim();
+    const digits = contact.replace(/\D/g,'');
+    if (!contact) { addErr('addContact','err_contact_number','Contact number is required.'); }
+    else if (!CONTACT_RE.test(contact)) { addErr('addContact','err_contact_number','Contact number must start with 09 or +63, 11 digits total.'); }
+    else if (/(.)\1\1/.test(digits)) { addErr('addContact','err_contact_number','Contact number cannot have 3+ consecutive identical digits.'); }
+    else clearError('addContact','err_contact_number');
+
+    // Province
+    const prov = document.getElementById('addProvince')?.value || '';
+    if (!prov) { addErr('addProvince','err_province','Province is required.'); }
+    else clearError('addProvince','err_province');
+
+    // Municipal
+    const mun = document.getElementById('addMunicipal')?.value || '';
+    if (!mun) { addErr('addMunicipal','err_municipal','Municipality is required.'); }
+    else clearError('addMunicipal','err_municipal');
+
+    // Barangay
+    const bar = document.getElementById('addBarangay')?.value || '';
+    if (!bar) { addErr('addBarangay','err_barangay','Barangay is required.'); }
+    else clearError('addBarangay','err_barangay');
+
+    // Program
+    const prog = document.getElementById('addProgram')?.value || '';
+    if (!prog) { addErr('addProgram','err_program_id','Please select a program.'); }
+    else clearError('addProgram','err_program_id');
+
+    // Year level
+    const yr = document.getElementById('addYearLevel')?.value || '';
+    if (!yr) { addErr('addYearLevel','err_year_level','Please select a year level.'); }
+    else clearError('addYearLevel','err_year_level');
+
+    if (!valid) { 
+        let errorMsg = '<strong>Validation Failed</strong><br>';
+        errorMsg += '<div style="margin-top:5px;font-size:0.9em;line-height:1.4;">' + errList.join('<br>') + '</div>';
+        showNotification(errorMsg, 'warning'); 
+        return; 
+    }
+
+    // Prevent duplicate submission
+    const btn = document.getElementById('addStudentBtn');
     const spinner = document.getElementById('addStudentSpinner');
+    if (btn) btn.disabled = true;
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch('/api/students/add', {
+    const payload = {
+        first_name: fn, middle_name: mn, last_name: ln,
+        gender, birthdate: bd, email, contact_number: contact,
+        province: prov, municipal: mun, barangay: bar,
+        program_id: prog, year_level: yr,
+        specialization_id: document.getElementById('addSpecialization')?.value || ''
+    };
+
+    fetch('/admin/api/students/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
     })
     .then(r => r.json())
     .then(result => {
+        if (btn) btn.disabled = false;
         if (spinner) spinner.style.display = 'none';
         if (result.success) {
-            showNotification(result.message || 'Student added successfully', 'success');
+            showNotification(result.message || 'Student added successfully.', 'success');
             closeModal('addStudentModal');
             form.reset();
             loadStats();
             loadStudents();
         } else {
-            showNotification(result.message, 'error');
+            // Show server-side field errors if returned
+            let errorMsg = '<strong>' + (result.message || 'Validation failed.') + '</strong><br>';
+            if (result.errors) {
+                const MAP = { first_name:'addFirstName', last_name:'addLastName', middle_name:'addMiddleName',
+                    email:'addEmail', gender:'addGender', birthdate:'addBirthdate',
+                    contact_number:'addContact', province:'addProvince', municipal:'addMunicipal',
+                    barangay:'addBarangay', program_id:'addProgram', year_level:'addYearLevel' };
+                const errList = [];
+                Object.entries(result.errors).forEach(([k,v]) => {
+                    if (MAP[k]) setError(MAP[k], 'err_'+k, v);
+                    errList.push('• ' + v);
+                });
+                if(errList.length > 0) {
+                    errorMsg += '<div style="margin-top:5px;font-size:0.9em;line-height:1.4;">' + errList.join('<br>') + '</div>';
+                }
+            }
+            showNotification(errorMsg, 'error');
         }
     })
     .catch(error => {
+        if (btn) btn.disabled = false;
         if (spinner) spinner.style.display = 'none';
         console.error('Error adding student:', error);
-        showNotification('Failed to add student', 'error');
+        showNotification('Failed to add student. Please try again.', 'error');
     });
 }
 
@@ -765,7 +1027,7 @@ function submitAddStudent() {
 document.getElementById('addProgram').addEventListener('change', function() {
     const programId = this.value;
     if (programId) {
-        fetch(`/api/program/${programId}`)
+        fetch(`/admin/api/program/${programId}`)
             .then(r => r.json())
             .then(data => {
                 if (data.success && data.specializations && data.specializations.length > 0) {
@@ -814,7 +1076,7 @@ function viewStudent(userId) {
         return;
     }
     
-    fetch(`/api/students/view/${userId}`)
+    fetch(`/admin/api/students/view/${userId}`)
         .then(r => {
             if (!r.ok) {
                 throw new Error(`HTTP error! status: ${r.status}`);
@@ -909,7 +1171,7 @@ function toggleStudentStatus(userId, newStatus) {
     const action = normalizedStatus === 'active' ? 'activate' : 'deactivate';
     if (!confirm(`Are you sure you want to ${action} this student?`)) return;
 
-    fetch(`/api/students/update-status/${userId}`, {
+    fetch(`/admin/api/students/update-status/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -949,16 +1211,75 @@ function showNotification(message, type = 'info') {
     const colors = { success: '#22c55e', error: '#ff6b6b', warning: '#fb923c', info: '#3b82f6' };
     const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
     notification.style.backgroundColor = colors[type] || colors.info;
-    notification.innerHTML = `<i class="fas ${icons[type] || icons.info}" style="font-size:1.2em"></i><span>${escapeHtml(message)}</span>`;
+    notification.innerHTML = `<i class="fas ${icons[type] || icons.info}" style="font-size:1.2em; margin-top:2px;"></i><span>${message}</span>`;
     document.body.appendChild(notification);
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.4s cubic-bezier(0.4,0,0.2,1) forwards';
         setTimeout(() => notification.remove(), 400);
-    }, 3000);
+    }, 5500);
 }
 
 const style = document.createElement('style');
 style.textContent = '@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}';
 document.head.appendChild(style);
+</script>
+<script src="{{ url_for('admin.static', filename='js/ph_address.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Input Restrictions for real-time formatting
+    ['addFirstName', 'addMiddleName', 'addLastName'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener('input', function() {
+                this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+                this.classList.remove('is-invalid');
+                const err = document.getElementById('err_' + id.replace('add', '').replace(/([A-Z])/g, "_$1").toLowerCase().substring(1));
+                if(err) err.textContent = '';
+            });
+        }
+    });
+
+    const contactEl = document.getElementById('addContact');
+    if(contactEl) {
+        contactEl.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, ''); // Remove non-digits
+            if (val.length > 0 && val[0] !== '0') val = '0' + val.substring(1);
+            if (val.length > 1 && val[1] !== '9') val = '09' + val.substring(2);
+            this.value = val;
+            this.classList.remove('is-invalid');
+            const err = document.getElementById('err_contact_number');
+            if(err) err.textContent = '';
+        });
+    }
+
+    // Clear errors on input for other fields
+    ['addGender', 'addBirthdate', 'addEmail', 'addProvince', 'addMunicipal', 'addBarangay', 'addProgram', 'addYearLevel'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+                let errId = 'err_' + id.replace('add', '').replace(/([A-Z])/g, "_$1").toLowerCase().substring(1);
+                if (id === 'addProgram') errId = 'err_program_id';
+                const err = document.getElementById(errId);
+                if(err) err.textContent = '';
+            });
+        }
+    });
+
+    const provSel = document.getElementById('addProvince');
+    const munSel  = document.getElementById('addMunicipal');
+    const barSel  = document.getElementById('addBarangay');
+    if (provSel) {
+        provSel.addEventListener('change', function() {
+            populateMunicipalities(this.value, munSel, barSel);
+        });
+    }
+    if (munSel) {
+        munSel.addEventListener('change', function() {
+            populateBarangays(document.getElementById('addProvince').value, this.value, barSel);
+        });
+    }
+});
+
 </script>
 {% endblock %}

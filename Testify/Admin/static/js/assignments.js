@@ -51,7 +51,7 @@ function selectBlock(b){
 
 // ── FILTERS ──
 function loadPrograms(){
-  fetch('/api/programs').then(r=>r.json()).then(d=>{
+  fetch('/admin/api/programs').then(r=>r.json()).then(d=>{
     if(!d.success)return;filterProgram.innerHTML='<option value="">Select Program</option>';
     d.programs.forEach(p=>{const o=document.createElement('option');o.value=p.program_id;o.textContent=p.program_code+' \u2014 '+p.program_name;filterProgram.appendChild(o);});
   }).catch(()=>toast('Failed to load programs','error'));
@@ -62,7 +62,7 @@ function onProgramChange(cb){
   filterSpec.innerHTML='<option value="">Select Specialization</option>';specWrap.style.display='none';
   filterYear.value='';filterYear.disabled=!pid;resetSection();hideTable();
   if(!pid){if(cb)cb();return;}
-  fetch('/api/program/'+pid).then(r=>r.json()).then(d=>{
+  fetch('/admin/api/program/'+pid).then(r=>r.json()).then(d=>{
     if(!d.success)return;
     if(d.specializations&&d.specializations.length){specWrap.style.display='';filterSpec.innerHTML='<option value="">All Specializations</option>';d.specializations.forEach(s=>{const o=document.createElement('option');o.value=s.specialization_id;o.textContent=s.specialization_code+' \u2014 '+s.specialization_name;filterSpec.appendChild(o);});}
     if(cb)cb();
@@ -72,7 +72,7 @@ function onYearChange(){resetSection();hideTable();if(filterProgram.value&&filte
 function resetSection(){filterSection.innerHTML='<option value="">Select Section</option>';filterSection.disabled=true;}
 function loadSections(cb){
   const pid=filterProgram.value,yl=filterYear.value;if(!pid||!yl){if(cb)cb();return;}
-  fetch('/api/program/'+pid).then(r=>r.json()).then(d=>{
+  fetch('/admin/api/program/'+pid).then(r=>r.json()).then(d=>{
     if(!d.success)return;const blocks=d.blocks.filter(b=>String(b.year_level)===String(yl));
     filterSection.innerHTML='<option value="">Select Section</option>';
     blocks.forEach(b=>{const o=document.createElement('option');o.value=b.block_id;o.textContent=b.section+' \u2014 '+b.block_name;filterSection.appendChild(o);});

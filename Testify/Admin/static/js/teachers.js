@@ -75,7 +75,7 @@ function hideSkeleton() {
 // ============================================
 
 function loadStats() {
-    fetch('/api/teachers/counts')
+    fetch('/admin/api/teachers/counts')
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -153,7 +153,7 @@ function loadTeachers() {
         search: currentSearch
     });
 
-    fetch(`/api/teachers?${params}`)
+    fetch(`/admin/api/teachers?${params}`)
         .then(r => r.json())
         .then(data => {
             hideSkeleton();
@@ -354,51 +354,7 @@ function updateResultCount(total) {
 // ADD TEACHER
 // ============================================
 
-function openAddTeacherModal() {
-    const form = document.getElementById('addTeacherForm');
-    if (form) form.reset();
-    openModal('addTeacherModal');
-}
 
-function submitAddTeacher() {
-    const form = document.getElementById('addTeacherForm');
-    if (!form) return;
-
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-
-    if (!data.first_name.trim() || !data.last_name.trim() || !data.email.trim() || !data.gender || !data.department_id) {
-        showNotification('Please fill in all fields', 'warning');
-        return;
-    }
-
-    const spinner = document.getElementById('addTeacherSpinner');
-    if (spinner) spinner.style.display = 'inline-block';
-
-    fetch('/api/teachers/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(r => r.json())
-    .then(result => {
-        if (spinner) spinner.style.display = 'none';
-        if (result.success) {
-            showNotification(result.message || 'Teacher added successfully', 'success');
-            closeModal('addTeacherModal');
-            form.reset();
-            loadStats();
-            loadTeachers();
-        } else {
-            showNotification(result.message, 'error');
-        }
-    })
-    .catch(error => {
-        if (spinner) spinner.style.display = 'none';
-        console.error('Error adding teacher:', error);
-        showNotification('Failed to add teacher', 'error');
-    });
-}
 
 // ============================================
 // ACTION HANDLERS
@@ -407,7 +363,7 @@ function submitAddTeacher() {
 function viewTeacher(userId) {
     closeAllActionMenus();
     
-    fetch(`/api/teachers/view/${userId}`)
+    fetch(`/admin/api/teachers/view/${userId}`)
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -489,7 +445,7 @@ function editTeacher(userId) {
     const form = document.getElementById('editTeacherForm');
     if (form) form.reset();
     
-    fetch(`/api/teachers/view/${userId}`)
+    fetch(`/admin/api/teachers/view/${userId}`)
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -563,7 +519,7 @@ function submitEditTeacher() {
     const spinner = document.getElementById('editTeacherSpinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch(`/api/teachers/edit/${data.user_id}`, {
+    fetch(`/admin/api/teachers/edit/${data.user_id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -602,7 +558,7 @@ function toggleTeacherStatus(userId, newStatus) {
     const action = normalizedStatus === 'active' ? 'activate' : 'deactivate';
     if (!confirm(`Are you sure you want to ${action} this teacher?`)) return;
 
-    fetch(`/api/teachers/update-status/${userId}`, {
+    fetch(`/admin/api/teachers/update-status/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -626,7 +582,7 @@ function deleteTeacher(userId) {
     closeAllActionMenus();
     if (!confirm('Are you sure you want to delete this teacher? This action cannot be undone.')) return;
 
-    fetch(`/api/teachers/delete/${userId}`, {
+    fetch(`/admin/api/teachers/delete/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     })

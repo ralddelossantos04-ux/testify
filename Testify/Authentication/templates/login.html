@@ -9,7 +9,6 @@
 </head>
 
 <body>
-
 <!-- Blobs -->
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
@@ -91,9 +90,20 @@
 
     <div class="card-subtitle">Please login to your account</div>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+    <form action="{{ url_for('auth.login', role=role) }}" method="post">
     <!-- Student Number field -->
     <div class="field">
-      <input type="text" id="studentNum" placeholder=" " autocomplete="off">
+      <input type="text" id="studentNum" name="username_input" placeholder=" " autocomplete="off">
       <label for="studentNum" id="studentNumLabel">Student Number</label>
       <span class="icon-left">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -105,7 +115,7 @@
 
     <!-- Password field -->
     <div class="field">
-      <input type="password" id="password" placeholder=" " autocomplete="off">
+      <input type="password" id="password" name="password_input" placeholder=" " autocomplete="off">
       <label for="password">Password</label>
       <span class="icon-left">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -122,15 +132,20 @@
     </div>
 
     <!-- Login button -->
-    <button class="btn-login" id="loginBtn" type="button">LOGIN</button>
+    <button class="btn-login" id="loginBtn" type="submit">LOGIN</button>
+    </form>
 
     <!-- Recover row (Student only) -->
     <div class="recover-row" id="recoverRow">
       <span>Can't access the account?</span>
-      <button class="btn-recover">Account Recover</button>
+      <a href="{{ url_for('auth.recover_password') }}"><button class="btn-recover">Account Recover</button>
+      </a>
     </div>
   </div>
 </div>
+<script>
+const CURRENT_ROLE = "{{ role }}";
+</script>
 </body>
 <script src="{{ url_for('auth.static', filename='js/login.js') }}"></script>
 </html>

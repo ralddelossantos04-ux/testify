@@ -1,0 +1,1186 @@
+{% extends "base_admin.html" %}
+{% block title %}Results - Testify Examination System{% endblock %}
+{% block page_title %}Results{% endblock %}
+{% block breadcrumb_item %}Results{% endblock %}
+{% block extra_css %}
+<style>
+/* ============================================
+   TAB NAVIGATION
+   ============================================ */
+.tabs-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tabs-wrapper {
+    display: flex;
+    gap: 8px;
+    border-bottom: none;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    top: 2px;
+}
+
+.tab-btn:hover {
+    color: var(--primary);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    border-radius: 8px;
+    font-size: 0.88em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dark);
+}
+
+.action-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.action-btn.btn-excel:hover {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+
+.action-btn.btn-pdf:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
+.action-btn.btn-print:hover {
+    background: #64748b;
+    border-color: #64748b;
+}
+
+.action-btn.btn-clear {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.action-btn.btn-clear:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.action-btn.btn-clear-small {
+    padding: 6px 12px;
+    font-size: 0.82em;
+}
+
+.action-btn.btn-clear-small:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* ============================================
+   FILTER SECTION
+   ============================================ */
+.filter-section {
+    background: var(--bg-white);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.filter-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.filter-section-title {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-section-title i {
+    color: var(--primary);
+    font-size: 1.1em;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.filter-group-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group-item label {
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--text-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 10px 40px 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.93em;
+    font-family: inherit;
+    background-color: var(--bg-white);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.filter-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--bg-secondary);
+}
+
+/* Search with autocomplete */
+.search-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.93em;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    pointer-events: none;
+}
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 500;
+    display: none;
+}
+
+.search-suggestions.visible {
+    display: block;
+}
+
+.suggestion-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: rgba(108, 92, 231, 0.06);
+}
+
+.suggestion-name {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.92em;
+}
+
+.suggestion-id {
+    font-size: 0.82em;
+    color: var(--text-gray);
+}
+
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+.results-card {
+    background: var(--bg-white);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.results-card .card-header {
+    padding: 20px 24px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+#resultsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.93em;
+}
+
+#resultsTable thead {
+    background: var(--bg-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#resultsTable thead th {
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+    user-select: none;
+}
+
+#resultsTable tbody td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-gray);
+    vertical-align: middle;
+}
+
+#resultsTable tbody tr {
+    transition: var(--transition);
+}
+
+#resultsTable tbody tr:hover {
+    background: rgba(108, 92, 231, 0.04);
+}
+
+#resultsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.92em;
+}
+
+.user-id {
+    font-size: 0.82em;
+    color: var(--text-gray);
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-value {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.92em;
+}
+
+.time-range {
+    font-size: 0.82em;
+    color: var(--text-gray);
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-light);
+}
+
+.pagination-info {
+    font-size: 0.88em;
+    color: var(--text-gray);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    border-radius: 8px;
+    font-size: 0.88em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.88em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pagination-page.active {
+    background: var(--primary);
+    color: white;
+}
+
+.pagination-page:hover:not(.active) {
+    background: rgba(108, 92, 231, 0.1);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.empty-state {
+    text-align: center;
+    padding: 60px 24px;
+}
+
+.empty-state-icon {
+    font-size: 3.5em;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.empty-state h3 {
+    color: var(--text-dark);
+    font-size: 1.15em;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: var(--text-gray);
+    font-size: 0.95em;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-pass {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.badge-fail {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.badge-violation {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.badge-clean {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+}
+
+/* Buttons */
+.btn-secondary {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+    font-size: 0.85em;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* Export buttons */
+.export-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-excel {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-excel:hover {
+    background: #15803d;
+}
+
+.btn-pdf {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-pdf:hover {
+    background: #dc2626;
+}
+
+.btn-print {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+
+.btn-print:hover {
+    background: #94a3b8;
+}
+
+@media (max-width: 1024px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+    .tabs-container {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="fade-in">
+
+    <!-- Tab Navigation with Action Buttons -->
+    <div class="tabs-container">
+        <div class="tabs-wrapper">
+            <button class="tab-btn {% if exam_type == 'Exam' %}active{% endif %}" onclick="switchTab('Exam')">
+                <i class="fas fa-file-alt"></i> Exams
+            </button>
+            <button class="tab-btn {% if exam_type == 'Quiz' %}active{% endif %}" onclick="switchTab('Quiz')">
+                <i class="fas fa-question-circle"></i> Quizzes
+            </button>
+        </div>
+        <div class="action-buttons">
+            <button class="action-btn btn-excel" onclick="exportExcel()">
+                <i class="fas fa-file-excel"></i> Export
+            </button>
+            <button class="action-btn btn-pdf" onclick="exportPDF()">
+                <i class="fas fa-file-pdf"></i> Export
+            </button>
+            <button class="action-btn btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-section-header">
+            <div class="filter-section-title"><i class="fas fa-filter"></i> Filter Results</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 0.85em; color: var(--text-gray); font-style: italic;">
+                    <i class="fas fa-info-circle"></i> Select program to enable other filters
+                </div>
+                <button class="action-btn btn-clear btn-clear-small" id="clearFiltersBtn" style="display: none;" onclick="clearAllFilters()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+        <div class="filter-grid">
+            <div class="filter-group-item search-group">
+                <label>Search Student</label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Name or ID..." value="{{ search }}" autocomplete="off">
+                </div>
+                <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
+            <div class="filter-group-item">
+                <label for="filterProgram">Program</label>
+                <select id="filterProgram" class="filter-select">
+                    <option value="">All Programs</option>
+                    {% for program in programs %}
+                    <option value="{{ program.program_id }}" {% if program_id|string == program.program_id|string %}selected{% endif %}>{{ program.program_code }} - {{ program.program_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group-item" id="specializationFilterGroup" style="display: none;">
+                <label for="filterSpecialization">Specialization</label>
+                <select id="filterSpecialization" class="filter-select">
+                    <option value="">All Specializations</option>
+                </select>
+            </div>
+            <div class="filter-group-item">
+                <label for="filterBlock">Year & Section</label>
+                <select id="filterBlock" class="filter-select" {% if not program_id %}disabled{% endif %}>
+                    <option value="">All Sections</option>
+                </select>
+            </div>
+            <div class="filter-group-item">
+                <label for="filterSubject">Subject</label>
+                <select id="filterSubject" class="filter-select" {% if not program_id %}disabled{% endif %}>
+                    <option value="">All Subjects</option>
+                </select>
+            </div>
+            <div class="filter-group-item">
+                <label id="examTitleLabel">Exam Title</label>
+                <select id="filterExam" class="filter-select" {% if not program_id %}disabled{% endif %}>
+                    <option value="">All {% if exam_type == 'Quiz' %}Quizzes{% else %}Exams{% endif %}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table Card -->
+    <div class="results-card">
+        <div class="card-header">
+            <h2 class="card-title">{{ exam_type }} Results</h2>
+            <span class="badge badge-primary" id="resultCount">{{ total }} results</span>
+        </div>
+        <div class="table-responsive">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th class="text-center">Score</th>
+                        <th class="text-center">Percentage</th>
+                        <th class="text-center">Status</th>
+                        <th>Date Taken</th>
+                        <th class="text-center">Time Spent</th>
+                        <th class="text-center">Violations</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <span class="user-name">{{ result.first_name }} {% if result.middle_name %}{{ result.middle_name[0] }}. {% endif %}{{ result.last_name }}</span>
+                                <span class="user-id">ID: {{ result.student_number }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center font-semibold">{{ result.score }} / {{ result.total_questions }}</td>
+                        <td class="text-center">{{ result.percentage }}%</td>
+                        <td class="text-center">
+                            {% if result.passed %}
+                            <span class="badge badge-pass">Passed</span>
+                            {% else %}
+                            <span class="badge badge-fail">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="date-info">
+                                <span class="date-value">{{ result.submitted_at_date }}</span>
+                                <span class="time-range">{{ result.started_at_time }} - {{ result.submitted_at_time }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">{{ result.time_spent }} mins</td>
+                        <td class="text-center">
+                            {% if result.violation_count > 0 %}
+                            <span class="badge badge-violation">{{ result.violation_count }}</span>
+                            {% else %}
+                            <span class="badge badge-clean">0</span>
+                            {% endif %}
+                        </td>
+                        <td><button class="btn btn-secondary">View Answers</button></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: 40px;">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list empty-state-icon"></i>
+                                <h3>No results found</h3>
+                                <p>No {{ exam_type.lower() }} results match your current filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if total > 0 %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ showing_start }} to {{ showing_end }} of {{ total }} results
+            </div>
+            <div class="pagination-controls">
+                <button class="pagination-btn" {% if page == 1 %}disabled{% endif %} onclick="changePage({{ page - 1 }})">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                    <span class="pagination-page active">{{ p }}</span>
+                    {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+                    <span class="pagination-page" onclick="changePage({{ p }})">{{ p }}</span>
+                    {% elif p == 4 or p == total_pages - 3 %}
+                    <span class="pagination-page" style="cursor: default;">...</span>
+                    {% endif %}
+                {% endfor %}
+                <button class="pagination-btn" {% if page == total_pages %}disabled{% endif %} onclick="changePage({{ page + 1 }})">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let currentExamType = '{{ exam_type }}';
+let currentPage = {{ page }};
+let searchTimeout = null;
+
+// Tab switching
+function switchTab(type) {
+    currentExamType = type;
+    currentPage = 1;
+    updateExamTitleLabel();
+    
+    // Update tab button active states
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Find and activate the clicked tab
+    const targetTab = Array.from(tabBtns).find(btn => btn.textContent.trim().toLowerCase().includes(type.toLowerCase()));
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Reset all filters
+    document.getElementById('filterProgram').value = '';
+    document.getElementById('filterBlock').innerHTML = '<option value="">All Sections</option>';
+    document.getElementById('filterBlock').disabled = true;
+    document.getElementById('filterSubject').innerHTML = '<option value="">All Subjects</option>';
+    document.getElementById('filterSubject').disabled = true;
+    document.getElementById('filterExam').innerHTML = '<option value="">All ' + (type === 'Quiz' ? 'Quizzes' : 'Exams') + '</option>';
+    document.getElementById('filterExam').disabled = true;
+    document.getElementById('searchInput').value = '';
+    
+    loadResults();
+}
+
+// Update exam title label based on tab
+function updateExamTitleLabel() {
+    const label = document.getElementById('examTitleLabel');
+    if (label) {
+        label.textContent = currentExamType === 'Quiz' ? 'Quiz Title' : 'Exam Title';
+    }
+}
+
+// Load results via AJAX
+function loadResults() {
+    const programId = document.getElementById('filterProgram').value;
+    const specializationId = document.getElementById('filterSpecialization').value;
+    const blockId = document.getElementById('filterBlock').value;
+    const subjectId = document.getElementById('filterSubject').value;
+    const examId = document.getElementById('filterExam').value;
+    const search = document.getElementById('searchInput').value;
+
+    const params = new URLSearchParams({
+        exam_type: currentExamType,
+        page: currentPage
+    });
+
+    if (programId) params.append('program_id', programId);
+    if (specializationId) params.append('specialization_id', specializationId);
+    if (blockId) params.append('block_id', blockId);
+    if (subjectId) params.append('subject_id', subjectId);
+    if (examId) params.append('exam_id', examId);
+    if (search) params.append('search', search);
+
+    fetch(`/admin/results?${params.toString()}`)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Update table body
+            const newTableBody = doc.querySelector('#resultsTable tbody');
+            document.querySelector('#resultsTable tbody').innerHTML = newTableBody.innerHTML;
+            
+            // Update result count
+            const newCount = doc.querySelector('#resultCount');
+            if (newCount) {
+                document.querySelector('#resultCount').textContent = newCount.textContent;
+            }
+            
+            // Update pagination
+            const newPagination = doc.querySelector('.pagination-container');
+            const oldPagination = document.querySelector('.pagination-container');
+            if (newPagination && oldPagination) {
+                oldPagination.innerHTML = newPagination.innerHTML;
+            }
+        })
+        .catch(error => console.error('Error loading results:', error));
+}
+
+// Program change handler
+document.getElementById('filterProgram').addEventListener('change', function() {
+    const programId = this.value;
+    const specializationSelect = document.getElementById('filterSpecialization');
+    const specializationFilterGroup = document.getElementById('specializationFilterGroup');
+    const blockSelect = document.getElementById('filterBlock');
+    const subjectSelect = document.getElementById('filterSubject');
+    const examSelect = document.getElementById('filterExam');
+
+    // Reset dependent filters
+    specializationSelect.innerHTML = '<option value="">All Specializations</option>';
+    specializationFilterGroup.style.display = 'none';
+    blockSelect.innerHTML = '<option value="">All Sections</option>';
+    subjectSelect.innerHTML = '<option value="">All Subjects</option>';
+    examSelect.innerHTML = '<option value="">All ' + (currentExamType === 'Quiz' ? 'Quizzes' : 'Exams') + '</option>';
+
+    if (programId) {
+        blockSelect.disabled = false;
+        subjectSelect.disabled = false;
+        examSelect.disabled = false;
+
+        // Fetch specializations
+        fetch(`/admin/api/results/specializations/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.has_specializations) {
+                        specializationFilterGroup.style.display = 'flex';
+                        data.specializations.forEach(spec => {
+                            const option = document.createElement('option');
+                            option.value = spec.specialization_id;
+                            option.textContent = `${spec.specialization_code} - ${spec.specialization_name}`;
+                            specializationSelect.appendChild(option);
+                        });
+                    } else {
+                        specializationFilterGroup.style.display = 'none';
+                    }
+                }
+            });
+
+        // Fetch blocks
+        fetch(`/admin/api/results/blocks/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    data.blocks.forEach(block => {
+                        const option = document.createElement('option');
+                        option.value = block.block_id;
+                        option.textContent = `${block.year_level} Year - ${block.section}`;
+                        blockSelect.appendChild(option);
+                    });
+                }
+            });
+
+        // Fetch subjects
+        fetch(`/admin/api/results/subjects/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    data.subjects.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject.subject_id;
+                        option.textContent = `${subject.subject_code} - ${subject.subject_name}`;
+                        subjectSelect.appendChild(option);
+                    });
+                }
+            });
+
+        // Fetch exams
+        fetch(`/admin/api/results/exams?exam_type=${currentExamType}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    data.exams.forEach(exam => {
+                        const option = document.createElement('option');
+                        option.value = exam.exam_id;
+                        option.textContent = exam.exam_title;
+                        examSelect.appendChild(option);
+                    });
+                }
+            });
+    } else {
+        blockSelect.disabled = true;
+        subjectSelect.disabled = true;
+        examSelect.disabled = true;
+    }
+
+    currentPage = 1;
+    updateClearButtonVisibility();
+    loadResults();
+});
+
+// Subject change handler
+document.getElementById('filterSubject').addEventListener('change', function() {
+    const subjectId = this.value;
+    const examSelect = document.getElementById('filterExam');
+    examSelect.innerHTML = '<option value="">All ' + (currentExamType === 'Quiz' ? 'Quizzes' : 'Exams') + '</option>';
+
+    if (subjectId) {
+        fetch(`/admin/api/results/exams?exam_type=${currentExamType}&subject_id=${subjectId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    data.exams.forEach(exam => {
+                        const option = document.createElement('option');
+                        option.value = exam.exam_id;
+                        option.textContent = exam.exam_title;
+                        examSelect.appendChild(option);
+                    });
+                }
+            });
+    }
+
+    currentPage = 1;
+    updateClearButtonVisibility();
+    loadResults();
+});
+
+// Block and Exam change handlers
+document.getElementById('filterBlock').addEventListener('change', function() {
+    currentPage = 1;
+    updateClearButtonVisibility();
+    loadResults();
+});
+
+document.getElementById('filterExam').addEventListener('change', function() {
+    currentPage = 1;
+    updateClearButtonVisibility();
+    loadResults();
+});
+
+document.getElementById('filterSpecialization').addEventListener('change', function() {
+    currentPage = 1;
+    updateClearButtonVisibility();
+    loadResults();
+});
+
+// Search with autocomplete
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.trim();
+    const suggestions = document.getElementById('searchSuggestions');
+
+    clearTimeout(searchTimeout);
+
+    if (query.length < 2) {
+        suggestions.classList.remove('visible');
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        fetch(`/admin/api/results/search-students?q=${encodeURIComponent(query)}&exam_type=${currentExamType}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.students.length > 0) {
+                    suggestions.innerHTML = data.students.map(student => `
+                        <div class="suggestion-item" onclick="selectStudent('${student.student_number}')">
+                            <div class="suggestion-name">${student.first_name} ${student.middle_name ? student.middle_name[0] + '. ' : ''}${student.last_name}</div>
+                            <div class="suggestion-id">ID: ${student.student_number}</div>
+                        </div>
+                    `).join('');
+                    suggestions.classList.add('visible');
+                } else {
+                    suggestions.classList.remove('visible');
+                }
+            });
+    }, 300);
+    
+    updateClearButtonVisibility();
+});
+
+// Select student from suggestions
+function selectStudent(studentNumber) {
+    document.getElementById('searchInput').value = studentNumber;
+    document.getElementById('searchSuggestions').classList.remove('visible');
+    currentPage = 1;
+    loadResults();
+}
+
+// Hide suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-group')) {
+        document.getElementById('searchSuggestions').classList.remove('visible');
+    }
+});
+
+// Pagination
+function changePage(page) {
+    currentPage = page;
+    loadResults();
+}
+
+// Export functions (placeholder)
+function exportExcel() {
+    alert('Excel export functionality to be implemented');
+}
+
+function exportPDF() {
+    alert('PDF export functionality to be implemented');
+}
+
+// Clear all filters
+function clearAllFilters() {
+    document.getElementById('filterProgram').value = '';
+    document.getElementById('filterSpecialization').innerHTML = '<option value="">All Specializations</option>';
+    document.getElementById('specializationFilterGroup').style.display = 'none';
+    document.getElementById('filterBlock').innerHTML = '<option value="">All Sections</option>';
+    document.getElementById('filterBlock').disabled = true;
+    document.getElementById('filterSubject').innerHTML = '<option value="">All Subjects</option>';
+    document.getElementById('filterSubject').disabled = true;
+    document.getElementById('filterExam').innerHTML = '<option value="">All ' + (currentExamType === 'Quiz' ? 'Quizzes' : 'Exams') + '</option>';
+    document.getElementById('filterExam').disabled = true;
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchSuggestions').classList.remove('visible');
+    
+    currentPage = 1;
+    updateClearButtonVisibility();
+    loadResults();
+}
+
+// Check if any filters are active and show/hide clear button
+function updateClearButtonVisibility() {
+    const programId = document.getElementById('filterProgram').value;
+    const specializationId = document.getElementById('filterSpecialization').value;
+    const blockId = document.getElementById('filterBlock').value;
+    const subjectId = document.getElementById('filterSubject').value;
+    const examId = document.getElementById('filterExam').value;
+    const search = document.getElementById('searchInput').value.trim();
+    
+    const hasActiveFilter = programId || specializationId || blockId || subjectId || examId || search;
+    const clearBtn = document.getElementById('clearFiltersBtn');
+    
+    if (clearBtn) {
+        clearBtn.style.display = hasActiveFilter ? 'inline-flex' : 'none';
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateExamTitleLabel();
+    updateClearButtonVisibility();
+
+    // Restore selected values if they exist
+    const programId = '{{ program_id }}';
+    const specializationId = '{{ specialization_id }}';
+    const blockId = '{{ block_id }}';
+    const subjectId = '{{ subject_id }}';
+    const examId = '{{ exam_id }}';
+
+    if (programId) {
+        document.getElementById('filterProgram').value = programId;
+        document.getElementById('filterBlock').disabled = false;
+        document.getElementById('filterSubject').disabled = false;
+        document.getElementById('filterExam').disabled = false;
+
+        // Fetch and load specializations
+        fetch(`/admin/api/results/specializations/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const specializationSelect = document.getElementById('filterSpecialization');
+                    const specializationFilterGroup = document.getElementById('specializationFilterGroup');
+                    if (data.has_specializations) {
+                        specializationFilterGroup.style.display = 'flex';
+                        data.specializations.forEach(spec => {
+                            const option = document.createElement('option');
+                            option.value = spec.specialization_id;
+                            option.textContent = `${spec.specialization_code} - ${spec.specialization_name}`;
+                            specializationSelect.appendChild(option);
+                        });
+                        if (specializationId) specializationSelect.value = specializationId;
+                    } else {
+                        specializationFilterGroup.style.display = 'none';
+                    }
+                    updateClearButtonVisibility();
+                }
+            });
+
+        // Load blocks
+        fetch(`/admin/api/results/blocks/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const blockSelect = document.getElementById('filterBlock');
+                    data.blocks.forEach(block => {
+                        const option = document.createElement('option');
+                        option.value = block.block_id;
+                        option.textContent = `${block.year_level} Year - ${block.section}`;
+                        blockSelect.appendChild(option);
+                    });
+                    if (blockId) blockSelect.value = blockId;
+                    updateClearButtonVisibility();
+                }
+            });
+
+        // Load subjects
+        fetch(`/admin/api/results/subjects/${programId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const subjectSelect = document.getElementById('filterSubject');
+                    data.subjects.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject.subject_id;
+                        option.textContent = `${subject.subject_code} - ${subject.subject_name}`;
+                        subjectSelect.appendChild(option);
+                    });
+                    if (subjectId) subjectSelect.value = subjectId;
+                    updateClearButtonVisibility();
+                }
+            });
+
+        // Load exams
+        fetch(`/admin/api/results/exams?exam_type=${currentExamType}${subjectId ? '&subject_id=' + subjectId : ''}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const examSelect = document.getElementById('filterExam');
+                    data.exams.forEach(exam => {
+                        const option = document.createElement('option');
+                        option.value = exam.exam_id;
+                        option.textContent = exam.exam_title;
+                        examSelect.appendChild(option);
+                    });
+                    if (examId) examSelect.value = examId;
+                    updateClearButtonVisibility();
+                }
+            });
+    }
+});
+</script>
+{% endblock %}

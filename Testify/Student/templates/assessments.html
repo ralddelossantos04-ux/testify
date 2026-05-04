@@ -1,0 +1,397 @@
+{% extends "base_student.html" %}
+
+{% block title %}Assessments - Testify{% endblock %}
+{% block page_title %}Assessments{% endblock %}
+{% block breadcrumb_item %}Assessments{% endblock %}
+
+{% block extra_css %}
+<style>
+    .exams-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .exam-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .exam-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary);
+        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
+
+    .exam-card.available::before {
+        background: #10b981;
+    }
+
+    .exam-card.upcoming::before {
+        background: #f59e0b;
+    }
+
+    .exam-card.expired::before {
+        background: #ef4444;
+    }
+
+    .exam-card.completed::before {
+        background: #3b82f6;
+    }
+
+    .exam-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .exam-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .exam-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .exam-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .exam-badge.quiz {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .exam-badge.exam {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .status-badge.available {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .status-badge.upcoming {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-badge.expired {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .status-badge.completed {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .exam-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .meta-item i {
+        color: var(--primary);
+        width: 16px;
+    }
+
+    .exam-schedule {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .schedule-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .schedule-label {
+        font-weight: 500;
+        color: var(--text-dark);
+        min-width: 80px;
+    }
+
+    .schedule-time {
+        font-family: 'Inter', monospace;
+        color: var(--text-muted);
+    }
+
+    .availability-info {
+        background: var(--bg-body);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .availability-info i {
+        font-size: 1.25rem;
+    }
+
+    .availability-info.available i {
+        color: #10b981;
+    }
+
+    .availability-info.upcoming i {
+        color: #f59e0b;
+    }
+
+    .availability-info.expired i {
+        color: #ef4444;
+    }
+
+    .availability-info.completed i {
+        color: #3b82f6;
+    }
+
+    .availability-text {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .availability-text strong {
+        color: var(--text-dark);
+    }
+
+    .exam-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+    }
+
+    .btn-primary:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+    }
+
+    .btn-outline:hover {
+        background: var(--bg-body);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        border: 1px dashed var(--border-color);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .exam-card {
+        animation: fadeIn 0.4s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="exams-container">
+    {% for exam in exams_list %}
+    {% set now = namespace(value=none) %}
+    {% if exam.status == 'completed' %}
+        {% set status_class = 'completed' %}
+        {% set status_text = 'Completed' %}
+        {% set status_icon = 'fa-check-double' %}
+        {% set availability_text = 'You have already completed this assessment.' %}
+        {% set btn_enabled = true %}
+    {% elif exam.status == 'available' %}
+        {% set status_class = 'available' %}
+        {% set status_text = 'Available Now' %}
+        {% set status_icon = 'fa-check-circle' %}
+        {% set availability_text = 'This assessment is currently available to take.' %}
+        {% set btn_enabled = true %}
+    {% elif exam.status == 'upcoming' %}
+        {% set status_class = 'upcoming' %}
+        {% set status_text = 'Upcoming' %}
+        {% set status_icon = 'fa-clock' %}
+        {% set availability_text = 'This assessment will be available starting ' + exam.start_datetime.strftime('%B %d, %Y at %I:%M %p') %}
+        {% set btn_enabled = false %}
+    {% else %}
+        {% set status_class = 'expired' %}
+        {% set status_text = 'Expired' %}
+        {% set status_icon = 'fa-times-circle' %}
+        {% set availability_text = 'This assessment ended on ' + exam.end_datetime.strftime('%B %d, %Y at %I:%M %p') %}
+        {% set btn_enabled = false %}
+    {% endif %}
+    
+    <div class="exam-card {{ status_class }}">
+        <div class="exam-header">
+            <h3 class="exam-title">{{ exam.exam_title }}</h3>
+            <div style="display: flex; gap: 0.5rem;">
+                <span class="exam-badge {{ exam.exam_type|lower }}">
+                    <i class="fas {% if exam.exam_type == 'Quiz' %}fa-clipboard-list{% else %}fa-file-alt{% endif %}"></i>
+                    {{ exam.exam_type }}
+                </span>
+                <span class="status-badge {{ status_class }}">
+                    <i class="fas {{ status_icon }}"></i>
+                    {{ status_text }}
+                </span>
+            </div>
+        </div>
+
+        <div class="availability-info {{ status_class }}">
+            <i class="fas {{ status_icon }}"></i>
+            <span class="availability-text">{{ availability_text }}</span>
+        </div>
+
+        <div class="exam-meta">
+            <div class="meta-item">
+                <i class="fas fa-book"></i>
+                <span>{{ exam.subject_name }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-clock"></i>
+                <span>{{ exam.duration_minutes }} minutes</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-list-ol"></i>
+                <span>{{ exam.total_questions }} questions</span>
+            </div>
+        </div>
+
+        <div class="exam-schedule">
+            <div class="schedule-item">
+                <span class="schedule-label">Start:</span>
+                <span class="schedule-time">{{ exam.start_datetime.strftime('%B %d, %Y at %I:%M %p') }}</span>
+            </div>
+            <div class="schedule-item">
+                <span class="schedule-label">End:</span>
+                <span class="schedule-time">{{ exam.end_datetime.strftime('%B %d, %Y at %I:%M %p') }}</span>
+            </div>
+        </div>
+
+        <div class="exam-actions">
+            {% if exam.status == 'completed' %}
+            <a href="{{ url_for('student.results', attempt_id=exam.completed_attempt_id) }}" class="btn btn-primary" style="background: #3b82f6;">
+                <i class="fas fa-chart-bar"></i>
+                View Result
+            </a>
+            {% elif btn_enabled %}
+            <a href="{{ url_for('student.take_exam', exam_id=exam.exam_id) }}" class="btn btn-primary">
+                <i class="fas fa-play"></i>
+                Take Assessment
+            </a>
+            {% else %}
+            <button class="btn btn-primary" disabled>
+                <i class="fas fa-lock"></i>
+                {{ status_text }}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-clipboard-check"></i>
+        <h3>No Assessments Available</h3>
+        <p>Your teacher hasn't published any assessments yet. Check back later!</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -121,9 +121,9 @@
                                         {% if exam.fullscreen_required %}<span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-expand"></i> Fullscreen</span>{% endif %}
                                         {% if exam.copy_paste_disabled %}<span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-cut"></i> No Copy-Paste</span>{% endif %}
                                     </div>
-                                    <div style="display: flex; gap: 0.5rem;">
+<div style="display: flex; gap: 0.5rem;">
                                         <button onclick="toggleExamDetails({{ exam.exam_id }})" style="padding: 0.375rem 0.75rem; background: var(--primary-light); color: var(--primary); border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">View Details</button>
-                                        <button style="padding: 0.375rem 0.75rem; background: var(--bg-body); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">Edit</button>
+                                        <button onclick="deleteExam({{ exam.exam_id }}, '{{ exam.exam_title }}')" style="padding: 0.375rem 0.75rem; background: #fee2e2; color: #ef4444; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.875rem;">Delete</button>
                                     </div>
                                     
                                     <!-- Hidden Exam Details -->
@@ -300,6 +300,30 @@
             detailsDiv.style.display = 'block';
         } else {
             detailsDiv.style.display = 'none';
+        }
+    }
+
+    function deleteExam(examId, examTitle) {
+        if (confirm('Are you sure you want to delete "' + examTitle + '"? This action cannot be undone.')) {
+            fetch('/teacher/delete_exam/' + examId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the exam.');
+            });
         }
     }
 

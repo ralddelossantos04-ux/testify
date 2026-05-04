@@ -98,7 +98,7 @@ function updateStats(){
 // ============================================
 
 function loadAllSpecializations(){
-    fetch('/api/programs')
+    fetch('/admin/api/programs')
         .then(r=>r.json())
         .then(data=>{
             if(data.success){
@@ -110,7 +110,7 @@ function loadAllSpecializations(){
                     }
                 });
                 // Fetch all specializations directly
-                return fetch('/api/all-specializations');
+                return fetch('/admin/api/all-specializations');
             }
         })
         .then(r=>{

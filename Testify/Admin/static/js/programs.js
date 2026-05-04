@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================
 
 function loadPrograms() {
-    fetch('/api/programs')
+    fetch('/admin/api/programs')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -114,8 +114,8 @@ function loadPrograms() {
 
 function searchPrograms(query) {
     const url = query.trim() 
-        ? `/api/programs/search?q=${encodeURIComponent(query.trim())}`
-        : '/api/programs';
+        ? `/admin/api/programs/search?q=${encodeURIComponent(query.trim())}`
+        : '/admin/api/programs';
     
     fetch(url)
         .then(response => response.json())
@@ -168,7 +168,7 @@ function updateSpecializationFilter(programId) {
     }
     
     // Fetch specializations for the selected program
-    fetch(`/api/program/${programId}`)
+    fetch(`/admin/api/program/${programId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.specializations && data.specializations.length > 0) {
@@ -216,7 +216,7 @@ function applyFilters() {
     if (specializationId && programId) {
         // Since we're filtering by program already, we need to check if that program has the specialization
         // This requires fetching the program's specializations
-        fetch(`/api/program/${programId}`)
+        fetch(`/admin/api/program/${programId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.specializations) {
@@ -534,7 +534,7 @@ function submitAddDepartment() {
     const spinner = document.getElementById('addDepartmentSpinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch('/api/department/add', {
+    fetch('/admin/api/department/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -658,7 +658,7 @@ function submitAddProgram() {
     const spinner = document.getElementById('addProgramSpinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch('/program/add', {
+    fetch('/admin/program/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -689,7 +689,7 @@ function submitAddProgram() {
 function openViewProgramModal(programId) {
     currentProgramId = programId;
     
-    fetch(`/api/program/${programId}`)
+    fetch(`/admin/api/program/${programId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -797,7 +797,7 @@ function viewBlockStudents(blockId) {
 
 function openEditProgramModal(programId) {
     // Fetch program details including specializations
-    fetch(`/api/program/${programId}`)
+    fetch(`/admin/api/program/${programId}`)
         .then(response => response.json())
         .then(data => {
             if (!data.success) {
@@ -946,7 +946,7 @@ function submitEditProgram() {
     const spinner = document.getElementById('editProgramSpinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch(`/program/edit/${programId.value}`, {
+    fetch(`/admin/program/edit/${programId.value}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -978,7 +978,7 @@ function deleteProgram(programId) {
         return;
     }
 
-    fetch(`/program/delete/${programId}`, {
+    fetch(`/admin/program/delete/${programId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     })
@@ -1082,7 +1082,7 @@ async function submitAddBlock() {
                 specialization_id: spec.specialization_id
             };
             try {
-                const response = await fetch('/block/add', {
+                const response = await fetch('/admin/block/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -1117,7 +1117,7 @@ async function submitAddBlock() {
             year_level: yearLevel.value
         };
 
-        fetch('/block/add', {
+        fetch('/admin/block/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1168,7 +1168,7 @@ function submitEditBlock() {
     const spinner = document.getElementById('editBlockSpinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch(`/block/edit/${blockId.value}`, {
+    fetch(`/admin/block/edit/${blockId.value}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ year_level: yearLevel.value })
@@ -1207,7 +1207,7 @@ function deleteBlock(blockId) {
         return;
     }
 
-    fetch(`/block/delete/${blockId}`, {
+    fetch(`/admin/block/delete/${blockId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     })

@@ -451,7 +451,7 @@ Security: Fullscreen + Copy Paste Disabled + Shuffled
         confirmBtn.disabled = true;
         confirmBtn.innerText = 'Saving...';
 
-        fetch('/save_exam', {
+        fetch('/teacher/save_exam', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -470,8 +470,9 @@ Security: Fullscreen + Copy Paste Disabled + Shuffled
             if (data.success) {
                 alert('✓ Assessment saved successfully!\nExam ID: ' + data.exam_id);
                 document.getElementById('confirmModal').style.display = 'none';
-                // Redirect to exams page
-                window.location.href = '/exams';
+                // Redirect back to class detail page
+                const assignmentId = document.getElementById('assignment_id').value;
+                window.location.href = '/teacher/class/' + assignmentId;
             } else {
                 throw new Error(data.message || 'Unknown error occurred');
             }

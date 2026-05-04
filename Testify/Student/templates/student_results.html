@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Results — Testify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; }
+
+:root {
+    --navy:      #0f172a;
+    --navy-800:  #1e293b;
+    --navy-700:  #334155;
+    --navy-600:  #475569;
+    --slate-400: #94a3b8;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50:  #f8fafc;
+    --white:     #ffffff;
+    --blue-700:  #1d4ed8;
+    --blue-600:  #2563eb;
+    --blue-100:  #dbeafe;
+    --blue-50:   #eff6ff;
+    --green-700: #15803d;
+    --green-600: #16a34a;
+    --green-100: #dcfce7;
+    --green-50:  #f0fdf4;
+    --amber-600: #d97706;
+    --amber-100: #fef3c7;
+    --amber-50:  #fffbeb;
+    --red-600:   #dc2626;
+    --red-100:   #fee2e2;
+    --red-50:    #fef2f2;
+    --sans:  'DM Sans', sans-serif;
+    --serif: 'Sora', sans-serif;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+body {
+    font-family: var(--sans);
+    background: var(--slate-50);
+    color: var(--navy);
+    min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+    background: var(--navy);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.tb-left { display: flex; align-items: center; gap: 14px; }
+.tb-badge {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,.15);
+}
+.tb-title {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+.submitted-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(52,211,153,.12);
+    border: 1px solid rgba(52,211,153,.25);
+    color: #34d399;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+.submitted-chip::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #34d399;
+}
+
+/* ── PAGE ── */
+.page-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.a1 { opacity: 0; animation: fadeUp .5s cubic-bezier(.22,1,.36,1) .05s forwards; }
+.a2 { opacity: 0; animation: fadeUp .5s cubic-bezier(.22,1,.36,1) .15s forwards; }
+.a3 { opacity: 0; animation: fadeUp .5s cubic-bezier(.22,1,.36,1) .25s forwards; }
+.a4 { opacity: 0; animation: fadeUp .5s cubic-bezier(.22,1,.36,1) .35s forwards; }
+.a5 { opacity: 0; animation: fadeUp .5s cubic-bezier(.22,1,.36,1) .45s forwards; }
+
+/* ── CARD ── */
+.card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+/* ── HERO ── */
+.hero-card { position: relative; }
+.hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.hero-card.pass::before   { background: var(--green-600); }
+.hero-card.border::before { background: var(--amber-600); }
+.hero-card.fail::before   { background: var(--red-600); }
+
+.hero-inner {
+    padding: 40px 36px 36px;
+    text-align: center;
+}
+.hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--slate-400);
+    margin-bottom: 6px;
+}
+.hero-exam-name {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+.hero-meta {
+    font-size: 13px;
+    color: var(--slate-400);
+    font-weight: 500;
+    margin-bottom: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.meta-dot {
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--slate-300);
+    flex-shrink: 0;
+}
+
+/* ring */
+.ring-wrap { display: flex; justify-content: center; margin-bottom: 28px; }
+.ring-box  { position: relative; width: 160px; height: 160px; }
+.ring-svg  { transform: rotate(-90deg); width: 160px; height: 160px; }
+.ring-track {
+    fill: none;
+    stroke: var(--slate-100);
+    stroke-width: 12;
+}
+.ring-fill {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 408;
+    stroke-dashoffset: 408;
+    transition: stroke-dashoffset 1.4s cubic-bezier(.34,1.3,.64,1);
+}
+.ring-fill.pass   { stroke: #22c55e; }
+.ring-fill.border { stroke: #f59e0b; }
+.ring-fill.fail   { stroke: #ef4444; }
+
+.ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.ring-pct {
+    font-family: var(--serif);
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+.ring-pct.pass   { color: var(--green-600); }
+.ring-pct.border { color: var(--amber-600); }
+.ring-pct.fail   { color: var(--red-600); }
+.ring-pts {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--slate-400);
+}
+
+/* verdict */
+.verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.verdict.pass   { background: var(--green-50); color: var(--green-700); border: 1px solid var(--green-100); }
+.verdict.border { background: var(--amber-50); color: var(--amber-600); border: 1px solid var(--amber-100); }
+.verdict.fail   { background: var(--red-50);   color: var(--red-600);   border: 1px solid var(--red-100); }
+.verdict-dot { width: 7px; height: 7px; border-radius: 50%; }
+.verdict.pass   .verdict-dot { background: var(--green-600); }
+.verdict.border .verdict-dot { background: var(--amber-600); }
+.verdict.fail   .verdict-dot { background: var(--red-600); }
+
+/* stat tiles */
+.stats-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--slate-100);
+}
+.stat-tile {
+    padding: 20px 16px;
+    text-align: center;
+    border-right: 1px solid var(--slate-100);
+}
+.stat-tile:last-child { border-right: none; }
+.stat-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+}
+.stat-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.stat-num.correct { color: var(--green-600); }
+.stat-num.wrong   { color: var(--red-600); }
+.stat-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--slate-400);
+}
+
+/* ── PROGRESS BAR ── */
+.prog-card { padding: 20px 24px; }
+.prog-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.prog-label { font-size: 13px; font-weight: 600; color: var(--navy-700); }
+.prog-value { font-size: 12px; font-weight: 600; color: var(--slate-400); }
+.prog-track {
+    height: 8px;
+    background: var(--slate-100);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--slate-200);
+    margin-bottom: 8px;
+}
+.prog-fill {
+    height: 100%;
+    border-radius: 10px;
+    width: 0%;
+    transition: width 1.2s cubic-bezier(.34,1.2,.64,1);
+}
+.prog-fill.pass   { background: var(--green-600); }
+.prog-fill.border { background: var(--amber-600); }
+.prog-fill.fail   { background: var(--red-600); }
+.prog-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--slate-400);
+    font-weight: 500;
+}
+
+/* ── DETAILS ── */
+.details-card { padding: 0 24px; }
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--slate-100);
+    gap: 16px;
+}
+.detail-row:last-child { border-bottom: none; }
+.d-key { font-size: 13px; color: var(--slate-400); font-weight: 500; flex-shrink: 0; }
+.d-val { font-size: 13px; font-weight: 600; color: var(--navy); text-align: right; }
+.d-val.mono { font-feature-settings: 'tnum'; letter-spacing: 0.2px; }
+
+/* ── ACTIONS ── */
+.action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: var(--radius-md);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+}
+.btn-secondary { background: var(--white); border-color: var(--slate-200); color: var(--navy-700); }
+.btn-secondary:hover { background: var(--slate-50); border-color: var(--slate-300); }
+.btn-primary { background: var(--blue-600); border-color: var(--blue-600); color: #fff; }
+.btn-primary:hover { background: var(--blue-700); border-color: var(--blue-700); transform: translateY(-1px); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 72px 32px; }
+.empty-icon {
+    width: 56px; height: 56px;
+    background: var(--slate-100);
+    border: 1px solid var(--slate-200);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+}
+.empty-title { font-family: var(--serif); font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.empty-sub   { font-size: 14px; color: var(--slate-400); margin-bottom: 28px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 560px) {
+    .topbar { padding: 0 16px; }
+    .hero-inner { padding: 32px 20px 28px; }
+    .stat-num { font-size: 22px; }
+    .action-bar { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    .page-wrap { padding: 24px 16px 60px; }
+}
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="tb-left">
+        <div class="tb-badge">{{ result_data.subject_code if result_data else 'Exam' }}</div>
+        <div class="tb-title">Exam Results</div>
+    </div>
+    <div class="submitted-chip">Submitted</div>
+</div>
+
+<div class="page-wrap">
+
+    {% if result_data %}
+
+    {% set pct         = (result_data.score / result_data.total_points * 100) | round(1) if result_data.total_points > 0 else 0 %}
+    {% set passed      = pct >= 75 %}
+    {% set borderline  = pct >= 65 and pct < 75 %}
+    {% set gc          = 'pass' if passed else ('border' if borderline else 'fail') %}
+    {% set ring_offset = 408 * (1 - pct / 100) %}
+
+    <!-- HERO CARD -->
+    <div class="card hero-card {{ gc }} a1">
+        <div class="hero-inner">
+            <div class="hero-eyebrow">{{ result_data.exam_type }}</div>
+            <div class="hero-exam-name">{{ result_data.exam_title }}</div>
+            <div class="hero-meta">
+                <span>{{ result_data.subject_name }}</span>
+                <div class="meta-dot"></div>
+                <span>{{ result_data.subject_code }}</span>
+                <div class="meta-dot"></div>
+                <span>{{ result_data.instructor }}</span>
+            </div>
+
+            <div class="ring-wrap">
+                <div class="ring-box">
+                    <svg class="ring-svg" viewBox="0 0 160 160">
+                        <circle class="ring-track" cx="80" cy="80" r="65"/>
+                        <circle class="ring-fill {{ gc }}" cx="80" cy="80" r="65"
+                                id="ring-fill" data-offset="{{ ring_offset }}"/>
+                    </svg>
+                    <div class="ring-inner">
+                        <div class="ring-pct {{ gc }}">{{ pct | int }}%</div>
+                        <div class="ring-pts">{{ result_data.score }} / {{ result_data.total_points }} pts</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="verdict {{ gc }}">
+                <span class="verdict-dot"></span>
+                {{ 'Passed' if passed else ('Near Pass' if borderline else 'Failed') }}
+            </div>
+        </div>
+
+        <div class="stats-tiles">
+            <div class="stat-tile">
+                <div class="stat-icon" style="background:var(--green-100)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <div class="stat-num correct">{{ result_data.correct }}</div>
+                <div class="stat-lbl">Correct</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon" style="background:var(--red-100)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </div>
+                <div class="stat-num wrong">{{ result_data.wrong }}</div>
+                <div class="stat-lbl">Wrong</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCORE PROGRESS -->
+    <div class="card a2">
+        <div class="prog-card">
+            <div class="prog-top">
+                <span class="prog-label">Score Progress</span>
+                <span class="prog-value">{{ result_data.score }} / {{ result_data.total_points }} pts</span>
+            </div>
+            <div class="prog-track">
+                <div class="prog-fill {{ gc }}" id="prog-fill" data-width="{{ pct }}"></div>
+            </div>
+            <div class="prog-ticks">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75% pass</span>
+                <span>100%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="card a3">
+        <div class="details-card">
+            <div class="detail-row">
+                <span class="d-key">Student</span>
+                <span class="d-val">{{ result_data.student_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="d-key">Student No.</span>
+                <span class="d-val mono">{{ result_data.student_number }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="d-key">Block</span>
+                <span class="d-val">{{ result_data.block }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="d-key">Total Questions</span>
+                <span class="d-val mono">{{ result_data.total_questions }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="d-key">Time Taken</span>
+                <span class="d-val mono">{{ result_data.time_used }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="d-key">Submitted At</span>
+                <span class="d-val mono">{{ result_data.submitted_at }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="action-bar a4">
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Dashboard
+        </a>
+    </div>
+
+    {% else %}
+
+    <div class="card a1">
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                </svg>
+            </div>
+            <div class="empty-title">No Results Found</div>
+            <div class="empty-sub">You haven't submitted any exams yet.</div>
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Go to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const ring = document.getElementById('ring-fill');
+    if (ring) {
+        const target = parseFloat(ring.dataset.offset || 0);
+        setTimeout(() => { ring.style.strokeDashoffset = target; }, 150);
+    }
+    const bar = document.getElementById('prog-fill');
+    if (bar) {
+        const w = parseFloat(bar.dataset.width || 0);
+        setTimeout(() => { bar.style.width = w + '%'; }, 300);
+    }
+});
+</script>
+</body>
+</html>

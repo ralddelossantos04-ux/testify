@@ -1,30 +1,48 @@
-# My Classes Dropdown Implementation - Student Side
+# TODO: Fix Assessments Display for Students
 
-## Steps
-- [x] Step 1: Add `get_student_context()` to student_bp.py to fetch student's classes
-- [x] Step 2: Update all student routes to use `get_student_context()`
-- [x] Step 3: Update base_student.html to make "My Classes" a dropdown
-- [x] Step 4: Verify teacher side dropdown is working correctly
-- [ ] Step 5: Test the implementation
+## Task Summary
+The exams created by teachers are not being displayed properly to students in the assessments page. This is due to several issues.
 
-## Summary of Changes
+## Issues Found
+1. **Status case mismatch**: Query checks for 'Published' but DB stores 'published' (lowercase)
+2. **Template field mismatch**: Template uses `exam.title` but DB returns `exam.exam_title`
+3. **Overly restrictive time filter**: Only shows exams where NOW() is between start and end datetime
 
-### Testify/Student/student_bp.py
-- Added imports: `session`, `db_config`, `mysql.connector`
-- Added `get_student_context()` function that:
-  - Fetches student name from `users` table
-  - Gets student's `block_id` from `student_profiles`
-  - Queries `course_assignments` joined with `subjects`, `blocks`, `programs` to get classes
-  - Returns `{'user_name': ..., 'classes': [...]}`
-- Updated all routes to pass context to templates
+## Plan
 
-### Testify/Student/templates/base_student.html
-- Changed "My Classes" from simple link to dropdown (`has-dropdown` structure)
-- Dropdown shows classes in format: `Course Code - Subject Code` (e.g., `241 - IT2201`)
-- Shows "No classes assigned" if student has no classes
-- Uses existing CSS/JS dropdown functionality (already present in template)
+### Step 1: Fix SQL query in student_bp.py
+- status: 'Published' -> 'published'
+- Remove restrictive time filter to show all published exams
+- Add more exam details to context
 
-### Teacher Side (Already Implemented)
-- Teacher sidebar already has "My Classes" dropdown with same format
-- `get_teacher_context()` already fetches teacher's classes
-- No changes needed for teacher side
+### Step 2: Fix assessments.html template
+- Change exam.title to exam.exam_title
+- Add better UI styling
+- Display more exam information
+
+## Status
+- [x] Fix student_bp.py query
+- [x] Fix assessments.html template
+
+## Completed Fixes
+
+### 1. student_bp.py
+Updated the `/assessments` route:
+- Changed status filter from `'Published'` to `'published'` (lowercase to match DB)
+- Removed the overly restrictive time filter (`NOW() BETWEEN...`)
+- Added more exam fields to query: exam_type, duration_minutes, total_questions, status
+
+### 2. assessments.html
+- Fixed field name: `exam.title` → `exam.exam_title`
+- Added proper styling matching base_student.html design system
+- Added exam metadata display (subject, duration, questions)
+- Added exam schedule display (start/end datetime)
+- Added proper badge for exam type (Quiz vs Exam)
+- Added proper datetime formatting
+
+### 3. Delete Exam Functionality (class_detail.html + teacher_bp.py)
+Added delete function for teachers to delete exams:
+- Added `/teacher/delete_exam/<exam_id>` route in teacher_bp.py
+- Deletes exam and all related data (questions, choices, attempts, answers, logs)
+- Added Delete button in class_detail.html for each exam
+- Added JavaScript deleteExam() function with confirmation dialog

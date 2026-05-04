@@ -14,7 +14,7 @@
     ADMIN: {
     light: '#9b7cff',
     mid: '#6c5ce7',
-    dark: '#4834d4',
+    dark: '#4834d4',  
     btn: '#6c5ce7',
     btnShadow: 'rgba(108,92,231,.45)',
     btnShadowHover: 'rgba(108,92,231,.6)',
@@ -55,13 +55,21 @@
     switchBtn.setAttribute('aria-expanded', open);
   });
 
-  document.querySelectorAll('.role-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      applyTheme(btn.dataset.role);
-      switchOpts.classList.remove('open');
-      switchBtn.classList.remove('open');
-    });
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+
+    const role = btn.dataset.role;
+
+    applyTheme(role);
+
+    switchOpts.classList.remove('open');
+    switchBtn.classList.remove('open');
+
+    // redirect to correct login role
+    window.location.href = "/auth/login?role=" + role;
+
   });
+});
 
   /* Close on outside click */
   document.addEventListener('click', e => {
@@ -128,7 +136,4 @@
   });
   
   /* Read role from URL parameter */
-const params = new URLSearchParams(window.location.search);
-const role = params.get("role") || "STUDENT";
-
-applyTheme(role);
+applyTheme(CURRENT_ROLE);
